@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
-import CountrySelectField from "@/components/forms/CountrySelectField";
+import { CountrySelectField } from "@/components/forms/CountrySelectField";
+import FooterLink from "@/components/forms/FooterLink";
 
 import {
   INVESTMENT_GOALS,
@@ -76,7 +77,13 @@ const SignUpPage = () => {
           validation={{ required: "Password is required", minLength: 8 }}
         />
 
-        <CountrySelectField />
+        <CountrySelectField
+          name="country"
+          label="Country"
+          control={control}
+          error={errors.country}
+          required
+        />
 
         <SelectField
           name="investmentGoals"
@@ -115,6 +122,12 @@ const SignUpPage = () => {
         >
           {isSubmitting ? "Creating Account" : "Start your investing journey"}
         </Button>
+
+        <FooterLink
+          text="Already have an account?"
+          linkText="Sign in"
+          href="/sign-in"
+        />
       </form>
     </>
   );
