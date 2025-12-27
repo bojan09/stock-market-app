@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:db": "node scripts/test-db.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -23,6 +24,8 @@
     "input": "^1.0.1",
     "label": "^0.2.2",
     "lucide-react": "^0.562.0",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.2",
     "next": "^16.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
