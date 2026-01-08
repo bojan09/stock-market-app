@@ -33,6 +33,7 @@ const SignUpPage = () => {
   });
   const onSubmit = async (data: SignUpFormData) => {
     try {
+      // signUpWithEmail
       console.log(data);
     } catch (e) {
       console.error(e);
