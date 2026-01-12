@@ -39,16 +39,13 @@ export const sendSignUpEmail = inngest.createFunction(
       const {
         data: { email, name },
       } = event;
-      return await sendWelcomeEmail({
-        email,
-        name,
-        intro: introText,
-      });
+
+      return await sendWelcomeEmail({ email, name, intro: introText });
     });
 
     return {
       success: true,
-      message: "Welcome email sent successful",
+      message: "Welcome email sent successfully",
     };
   }
 );
