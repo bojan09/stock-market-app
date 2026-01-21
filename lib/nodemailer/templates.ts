@@ -1,3 +1,4 @@
+const currentDate = new Date();
 export const WELCOME_EMAIL_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,7 +154,9 @@ export const WELCOME_EMAIL_TEMPLATE = `<!DOCTYPE html>
                                Signalist HQ, 200 Market Street, San Francisco, CA 94105<br>
                                 <a href="#" style="color: #CCDADC !important; text-decoration: underline;">Unsubscribe</a> | 
                                 <a href="https://stock-market-dev.vercel.app/" style="color: #CCDADC !important; text-decoration: underline;">Visit Signalist</a><br>
-                                © 2025 Signalist
+                                © ${currentDate
+                                  .getFullYear()
+                                  .toLocaleString()} Signalist
                             </p>
                         </td>
                     </tr>
