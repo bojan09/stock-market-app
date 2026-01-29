@@ -17,7 +17,9 @@ import {
 } from "@/lib/actions/watchlist.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner"; // Ensure 'sonner' is installed in your project
 
+// Define the types
 type Stock = {
   symbol: string;
   name: string;
@@ -51,6 +53,7 @@ export default function SearchCommand({
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
 
+  // Keyboard shortcut (Ctrl+K or Cmd+K)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -62,6 +65,7 @@ export default function SearchCommand({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Main search logic with database cross-referencing (hydration)
   const handleSearch = useCallback(async () => {
     if (!isSearchMode) {
       setStocks(initialStocks);
@@ -70,13 +74,13 @@ export default function SearchCommand({
 
     setLoading(true);
     try {
-      // 1. Get results from Finnhub
+      // 1. Get raw search results from Finnhub
       const results = await searchStocks(searchTerm.trim());
 
-      // 2. Get user's current watchlist from DB to cross-reference
+      // 2. Fetch the user's latest watchlist from your DB
       const watchedSymbols = await getWatchlistSymbolsByEmail(userEmail);
 
-      // 3. Map the results to include the correct watchlist status
+      // 3. Map results to include current watchlist status so stars stay filled
       const hydratedResults = results.map((s: Stock) => ({
         ...s,
         isInWatchlist: watchedSymbols.includes(s.symbol.toUpperCase()),
@@ -110,30 +114,44 @@ export default function SearchCommand({
     e.preventDefault();
     e.stopPropagation();
 
-    const targetSymbol = stock.symbol;
+    if (!userEmail) {
+      toast.error("Please sign in to manage your watchlist");
+      return;
+    }
 
-    // Optimistic Update
+    const targetSymbol = stock.symbol.toUpperCase();
+    const isAdding = !stock.isInWatchlist;
+
+    // Optimistic UI Update
     setStocks((prev) =>
       prev.map((s) =>
-        s.symbol === targetSymbol
-          ? { ...s, isInWatchlist: !s.isInWatchlist }
-          : s,
+        s.symbol === stock.symbol ? { ...s, isInWatchlist: isAdding } : s,
       ),
     );
 
     try {
-      // Passing email, symbol, AND company name (required by your Mongoose schema)
-      await toggleWatchlist(userEmail, targetSymbol, stock.name);
+      // Pass email, symbol, and stock name (required by your Mongoose schema)
+      const result = await toggleWatchlist(userEmail, targetSymbol, stock.name);
+
+      if (result.success) {
+        // Toast notification for both adding and removing
+        toast.success(
+          isAdding
+            ? `${targetSymbol} added to watchlist`
+            : `${targetSymbol} removed from watchlist`,
+        );
+      } else {
+        // Revert UI on server failure
+        throw new Error("Server failed");
+      }
     } catch (error) {
-      // Revert if the server action fails
       setStocks((prev) =>
         prev.map((s) =>
-          s.symbol === targetSymbol
-            ? { ...s, isInWatchlist: !s.isInWatchlist }
-            : s,
+          s.symbol === stock.symbol ? { ...s, isInWatchlist: !isAdding } : s,
         ),
       );
-      console.error("Failed to update watchlist", error);
+      toast.error("Failed to update watchlist");
+      console.error("Watchlist error:", error);
     }
   };
 
@@ -170,7 +188,7 @@ export default function SearchCommand({
         <CommandList className="search-list">
           {loading && !displayStocks.length ? (
             <CommandEmpty className="search-list-empty py-6 text-center text-sm">
-              Loading stocks...
+              Searching...
             </CommandEmpty>
           ) : displayStocks?.length === 0 ? (
             <div className="search-list-indicator py-6 text-center text-sm text-muted-foreground">
