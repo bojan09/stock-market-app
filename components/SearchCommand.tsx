@@ -17,95 +17,83 @@ import {
 } from "@/lib/actions/watchlist.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner"; // Ensure 'sonner' is installed in your project
+import { toast } from "sonner";
 
-// Define the types
-type Stock = {
-  symbol: string;
-  name: string;
-  exchange: string;
-  type: string;
-};
-
-type StockWithWatchlistStatus = Stock & {
-  isInWatchlist: boolean;
-};
+type Stock = { symbol: string; name: string; exchange: string; type: string };
+type StockWithWatchlistStatus = Stock & { isInWatchlist: boolean };
 
 interface SearchCommandProps {
   renderAs?: "button" | "text";
   label?: string;
-  initialStocks: StockWithWatchlistStatus[];
+  initialStocks: Stock[];
   userEmail: string;
 }
 
 export default function SearchCommand({
   renderAs = "button",
-  label = "Add stock",
+  label,
   initialStocks,
   userEmail,
 }: SearchCommandProps) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [stocks, setStocks] =
-    useState<StockWithWatchlistStatus[]>(initialStocks);
+  const [isPending, setIsPending] = useState(false);
 
-  const isSearchMode = !!searchTerm.trim();
-  const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
+  // Initialize with the prop, but we will hydrate it immediately
+  const [stocks, setStocks] = useState<StockWithWatchlistStatus[]>(
+    initialStocks.map((s) => ({ ...s, isInWatchlist: false })),
+  );
 
-  // Keyboard shortcut (Ctrl+K or Cmd+K)
+  /**
+   * FIX: HYDRATION EFFECT
+   * When the component loads or email changes, check the actual watchlist status
+   * for the initial stocks.
+   */
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((v) => !v);
-      }
+    const hydrateInitialStocks = async () => {
+      if (!userEmail) return;
+      const watchedSymbols = await getWatchlistSymbolsByEmail(userEmail);
+      setStocks(
+        initialStocks.map((s) => ({
+          ...s,
+          isInWatchlist: watchedSymbols.includes(s.symbol.toUpperCase()),
+        })),
+      );
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
 
-  // Main search logic with database cross-referencing (hydration)
-  const handleSearch = useCallback(async () => {
-    if (!isSearchMode) {
-      setStocks(initialStocks);
-      return;
+    if (!searchTerm) {
+      hydrateInitialStocks();
     }
+  }, [initialStocks, userEmail, searchTerm]);
+
+  const handleSearch = useCallback(async () => {
+    if (!searchTerm.trim()) return;
 
     setLoading(true);
     try {
-      // 1. Get raw search results from Finnhub
-      const results = await searchStocks(searchTerm.trim());
+      const [results, watchedSymbols] = await Promise.all([
+        searchStocks(searchTerm.trim()),
+        getWatchlistSymbolsByEmail(userEmail),
+      ]);
 
-      // 2. Fetch the user's latest watchlist from your DB
-      const watchedSymbols = await getWatchlistSymbolsByEmail(userEmail);
-
-      // 3. Map results to include current watchlist status so stars stay filled
-      const hydratedResults = results.map((s: Stock) => ({
+      const hydrated = results.map((s: Stock) => ({
         ...s,
         isInWatchlist: watchedSymbols.includes(s.symbol.toUpperCase()),
       }));
 
-      setStocks(hydratedResults);
+      setStocks(hydrated);
     } catch (error) {
-      console.error("Search error:", error);
-      setStocks([]);
+      console.error("Search error");
     } finally {
       setLoading(false);
     }
-  }, [isSearchMode, searchTerm, initialStocks, userEmail]);
+  }, [searchTerm, userEmail]);
 
   const debouncedSearch = useDebounce(handleSearch, 300);
-
   useEffect(() => {
     debouncedSearch();
   }, [searchTerm, debouncedSearch]);
-
-  const handleSelectStock = () => {
-    setOpen(false);
-    setSearchTerm("");
-    setStocks(initialStocks);
-  };
 
   const handleWatchlistToggle = async (
     e: React.MouseEvent,
@@ -119,123 +107,113 @@ export default function SearchCommand({
       return;
     }
 
+    if (isPending) return;
+
     const targetSymbol = stock.symbol.toUpperCase();
     const isAdding = !stock.isInWatchlist;
 
-    // Optimistic UI Update
+    // 1. Optimistic UI update
     setStocks((prev) =>
       prev.map((s) =>
         s.symbol === stock.symbol ? { ...s, isInWatchlist: isAdding } : s,
       ),
     );
 
+    setIsPending(true);
+
     try {
-      // Pass email, symbol, and stock name (required by your Mongoose schema)
       const result = await toggleWatchlist(userEmail, targetSymbol, stock.name);
 
       if (result.success) {
-        // Toast notification for both adding and removing
         toast.success(
-          isAdding
-            ? `${targetSymbol} added to watchlist`
-            : `${targetSymbol} removed from watchlist`,
+          `${targetSymbol} ${isAdding ? "added to" : "removed from"} watchlist`,
+          {
+            style: {
+              color: isAdding ? "#22c55e" : "#ef4444",
+              fontWeight: "600",
+            },
+          },
         );
       } else {
-        // Revert UI on server failure
-        throw new Error("Server failed");
+        throw new Error();
       }
     } catch (error) {
+      // 2. Rollback
       setStocks((prev) =>
         prev.map((s) =>
           s.symbol === stock.symbol ? { ...s, isInWatchlist: !isAdding } : s,
         ),
       );
-      toast.error("Failed to update watchlist");
-      console.error("Watchlist error:", error);
+      toast.error("Update failed.");
+    } finally {
+      setIsPending(false);
     }
   };
 
   return (
     <>
-      {renderAs === "text" ? (
-        <span
-          onClick={() => setOpen(true)}
-          className="search-text cursor-pointer"
-        >
-          {label}
-        </span>
-      ) : (
-        <Button onClick={() => setOpen(true)} className="search-btn">
-          {label}
-        </Button>
-      )}
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
-        className="search-dialog"
-      >
-        <div className="search-field flex items-center border-b px-3">
+      <div onClick={() => setOpen(true)} className="cursor-pointer">
+        {renderAs === "text" ? (
+          <span className="hover:text-yellow-500 transition-colors">
+            {label || "Search"}
+          </span>
+        ) : (
+          <Button>{label || "Search Stocks"}</Button>
+        )}
+      </div>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <div className="flex items-center border-b border-gray-800 px-3 bg-[#121212]">
           <CommandInput
             value={searchTerm}
             onValueChange={setSearchTerm}
-            placeholder="Search stocks..."
-            className="search-input flex-1"
+            placeholder="Search symbols..."
+            className="flex-1 bg-transparent border-none focus:ring-0"
           />
-          {loading && (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          {(loading || isPending) && (
+            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
           )}
         </div>
-        <CommandList className="search-list">
-          {loading && !displayStocks.length ? (
-            <CommandEmpty className="search-list-empty py-6 text-center text-sm">
-              Searching...
+        <CommandList className="bg-[#121212] overflow-y-auto max-h-[400px]">
+          {searchTerm && stocks.length === 0 && !loading && (
+            <CommandEmpty className="py-6 text-center text-sm text-gray-400">
+              No results.
             </CommandEmpty>
-          ) : displayStocks?.length === 0 ? (
-            <div className="search-list-indicator py-6 text-center text-sm text-muted-foreground">
-              {isSearchMode ? "No results found" : "No stocks available"}
-            </div>
-          ) : (
-            <div className="py-2">
-              <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {isSearchMode ? "Search results" : "Popular stocks"}
-                {` `}({displayStocks?.length || 0})
-              </div>
-              <ul>
-                {displayStocks?.map((stock) => (
-                  <li key={stock.symbol} className="relative group">
-                    <Link
-                      href={`/stocks/${stock.symbol}`}
-                      onClick={handleSelectStock}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
-                    >
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{stock.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {stock.symbol} | {stock.exchange} | {stock.type}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => handleWatchlistToggle(e, stock)}
-                        className="p-2 hover:bg-background rounded-full transition-all z-10"
-                      >
-                        <Star
-                          className={cn(
-                            "h-5 w-5 transition-colors",
-                            stock.isInWatchlist
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-muted-foreground hover:text-yellow-400",
-                          )}
-                        />
-                      </button>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
           )}
+
+          <div className="py-2">
+            {stocks.map((stock) => (
+              <div key={stock.symbol}>
+                <Link
+                  href={`/stocks/${stock.symbol}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 transition-colors"
+                >
+                  <TrendingUp className="h-4 w-4 text-gray-500" />
+                  <div className="flex-1">
+                    <div className="font-medium text-sm text-gray-100">
+                      {stock.name}
+                    </div>
+                    <div className="text-xs text-gray-500">{stock.symbol}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => handleWatchlistToggle(e, stock)}
+                    disabled={isPending}
+                    className="p-2 z-20 group relative"
+                  >
+                    <Star
+                      className={cn(
+                        "h-5 w-5 transition-all duration-300 transform",
+                        stock.isInWatchlist
+                          ? "fill-yellow-400 text-yellow-400 scale-125 rotate-[72deg]"
+                          : "text-gray-500 group-hover:text-yellow-400 hover:scale-110",
+                      )}
+                    />
+                  </button>
+                </Link>
+              </div>
+            ))}
+          </div>
         </CommandList>
       </CommandDialog>
     </>

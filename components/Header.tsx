@@ -42,7 +42,7 @@ const Header = async ({ user }: HeaderProps) => {
         <UserDropdown
           user={user}
           initialStocks={initialStocks}
-          userEmail={userEmail}
+          userEmail={userEmail || ""}
         />
       </div>
     </header>

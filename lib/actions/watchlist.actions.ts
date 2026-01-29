@@ -4,79 +4,54 @@ import { connectToDatabase } from "@/database/mongoose";
 import { Watchlist } from "@/database/models/watchlist.model";
 import { revalidatePath } from "next/cache";
 
-/**
- * HELPER: Gets the internal User ID from an email
- */
-async function getUserIdByEmail(email: string) {
-  const mongoose = await connectToDatabase();
-  const db = mongoose.connection.db;
-  if (!db) throw new Error("MongoDB connection not found");
-
-  const user = await db.collection("user").findOne<{ _id: any }>({ email });
-
-  if (!user) return null;
-  return String(user._id);
+export async function getWatchlistSymbolsByEmail(
+  email: string,
+): Promise<string[]> {
+  if (!email) return [];
+  try {
+    await connectToDatabase();
+    // Your model uses 'userId' for the email string
+    const items = await Watchlist.find({ userId: email })
+      .select("symbol")
+      .lean();
+    return items.map((i) => String(i.symbol).toUpperCase());
+  } catch (err) {
+    console.error("Fetch symbols error:", err);
+    return [];
+  }
 }
 
-/**
- * Toggles a stock symbol in the user's watchlist
- */
 export async function toggleWatchlist(
   email: string,
   symbol: string,
-  companyName?: string,
+  company: string,
 ) {
-  if (!email || !symbol) return { success: false, error: "Missing data" };
+  if (!email) return { success: false, error: "Unauthorized" };
 
   try {
     await connectToDatabase();
-    const userId = await getUserIdByEmail(email);
-    if (!userId) throw new Error("User not found");
-
     const targetSymbol = symbol.toUpperCase();
-    const existing = await Watchlist.findOne({ userId, symbol: targetSymbol });
+
+    const existing = await Watchlist.findOne({
+      userId: email,
+      symbol: targetSymbol,
+    });
 
     if (existing) {
       await Watchlist.deleteOne({ _id: existing._id });
     } else {
       await Watchlist.create({
-        userId,
+        userId: email,
         symbol: targetSymbol,
-        company: companyName || targetSymbol,
+        company: company || targetSymbol,
         addedAt: new Date(),
       });
     }
 
-    revalidatePath("/");
-    revalidatePath("/dashboard");
-    revalidatePath("/watchlist");
-    revalidatePath(`/stocks/${targetSymbol}`);
-
+    revalidatePath("/", "layout");
     return { success: true };
-  } catch (err) {
-    console.error("toggleWatchlist error:", err);
-    return { success: false, error: "Database operation failed" };
-  }
-}
-
-/**
- * FIXED: Explicitly exported so SearchCommand can access it
- */
-export async function getWatchlistSymbolsByEmail(
-  email: string,
-): Promise<string[]> {
-  if (!email) return [];
-
-  try {
-    await connectToDatabase();
-    const userId = await getUserIdByEmail(email);
-    if (!userId) return [];
-
-    const items = await Watchlist.find({ userId }, { symbol: 1 }).lean();
-
-    return items.map((i) => String(i.symbol));
-  } catch (err) {
-    console.error("getWatchlistSymbolsByEmail error:", err);
-    return [];
+  } catch (error: any) {
+    console.error("Toggle DB Error:", error.message);
+    return { success: false };
   }
 }

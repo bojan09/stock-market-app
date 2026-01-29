@@ -5,27 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchCommand from "@/components/SearchCommand";
 
-// Ensure the type is available for the prop definition
-type StockWithWatchlistStatus = {
-  symbol: string;
-  name: string;
-  exchange: string;
-  type: string;
-  isInWatchlist: boolean;
-};
-
-interface NavItemsProps {
-  initialStocks: StockWithWatchlistStatus[];
-  userEmail: string;
-}
-
-const NavItems = ({ initialStocks, userEmail }: NavItemsProps) => {
+const NavItems = ({ initialStocks, userEmail }: any) => {
   const pathname = usePathname();
-
-  const isActive = (path: string) => {
-    if (path === "/") return pathname === "/";
-    return pathname.startsWith(path);
-  };
 
   return (
     <ul className="flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium">
@@ -35,9 +16,9 @@ const NavItems = ({ initialStocks, userEmail }: NavItemsProps) => {
             <li key="search-trigger">
               <SearchCommand
                 renderAs="text"
-                label="Search"
+                label={label} // Passes "Search" from your constants
                 initialStocks={initialStocks}
-                userEmail={userEmail} // Passing required prop to fix Vercel build
+                userEmail={userEmail}
               />
             </li>
           );
@@ -46,9 +27,9 @@ const NavItems = ({ initialStocks, userEmail }: NavItemsProps) => {
           <li key={href}>
             <Link
               href={href}
-              className={`hover:text-yellow-500 transition-colors ${
-                isActive(href) ? "text-gray-100" : "text-gray-400"
-              }`}
+              className={
+                pathname.startsWith(href) ? "text-white" : "text-gray-400"
+              }
             >
               {label}
             </Link>
