@@ -12,11 +12,9 @@ async function getUserIdByEmail(email: string) {
   const db = mongoose.connection.db;
   if (!db) throw new Error("MongoDB connection not found");
 
-  // Type cast to avoid the "any" linting error
   const user = await db.collection("user").findOne<{ _id: any }>({ email });
 
   if (!user) return null;
-  // Your schema uses String for userId, so we convert the MongoDB _id to string
   return String(user._id);
 }
 
@@ -36,24 +34,19 @@ export async function toggleWatchlist(
     if (!userId) throw new Error("User not found");
 
     const targetSymbol = symbol.toUpperCase();
-
-    // 1. Try to find existing entry
     const existing = await Watchlist.findOne({ userId, symbol: targetSymbol });
 
     if (existing) {
-      // Remove it
       await Watchlist.deleteOne({ _id: existing._id });
     } else {
-      // 2. Create with REQUIRED company field matching your schema
       await Watchlist.create({
         userId,
         symbol: targetSymbol,
-        company: companyName || targetSymbol, // Fallback to symbol if name is missing
+        company: companyName || targetSymbol,
         addedAt: new Date(),
       });
     }
 
-    // Refresh the necessary paths to update the UI
     revalidatePath("/");
     revalidatePath("/dashboard");
     revalidatePath("/watchlist");
@@ -67,8 +60,7 @@ export async function toggleWatchlist(
 }
 
 /**
- * NEW: Fetches all watched symbols for a specific user to sync stars in search
- * This fixes the "Module has no exported member" error
+ * FIXED: Explicitly exported so SearchCommand can access it
  */
 export async function getWatchlistSymbolsByEmail(
   email: string,
@@ -80,7 +72,6 @@ export async function getWatchlistSymbolsByEmail(
     const userId = await getUserIdByEmail(email);
     if (!userId) return [];
 
-    // Find all symbols for this user and return just the symbol strings
     const items = await Watchlist.find({ userId }, { symbol: 1 }).lean();
 
     return items.map((i) => String(i.symbol));

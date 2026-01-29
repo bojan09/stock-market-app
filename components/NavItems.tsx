@@ -5,14 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchCommand from "@/components/SearchCommand";
 
-// Add userEmail to the component props
-const NavItems = ({
-  initialStocks,
-  userEmail,
-}: {
+// Ensure the type is available for the prop definition
+type StockWithWatchlistStatus = {
+  symbol: string;
+  name: string;
+  exchange: string;
+  type: string;
+  isInWatchlist: boolean;
+};
+
+interface NavItemsProps {
   initialStocks: StockWithWatchlistStatus[];
   userEmail: string;
-}) => {
+}
+
+const NavItems = ({ initialStocks, userEmail }: NavItemsProps) => {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -30,7 +37,7 @@ const NavItems = ({
                 renderAs="text"
                 label="Search"
                 initialStocks={initialStocks}
-                userEmail={userEmail} // <--- Pass it here
+                userEmail={userEmail} // Passing required prop to fix Vercel build
               />
             </li>
           );
@@ -40,7 +47,7 @@ const NavItems = ({
             <Link
               href={href}
               className={`hover:text-yellow-500 transition-colors ${
-                isActive(href) ? "text-gray-100" : ""
+                isActive(href) ? "text-gray-100" : "text-gray-400"
               }`}
             >
               {label}
@@ -51,4 +58,5 @@ const NavItems = ({
     </ul>
   );
 };
+
 export default NavItems;

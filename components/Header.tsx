@@ -4,11 +4,21 @@ import NavItems from "@/components/NavItems";
 import UserDropdown from "@/components/UserDropdown";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
 
-// Ensure User type includes email; adjust import if necessary
-const Header = async ({ user }: { user: User }) => {
+// Adjusting the local interface to ensure email is recognized
+interface HeaderProps {
+  user: {
+    id?: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+}
+
+const Header = async ({ user }: HeaderProps) => {
+  // Fetch initial stocks for the search command
   const initialStocks = await searchStocks();
 
-  // Extract the email from the user object passed as a prop
+  // Extract the email safely
   const userEmail = user?.email || "";
 
   return (
@@ -23,11 +33,17 @@ const Header = async ({ user }: { user: User }) => {
             className="h-8 w-auto cursor-pointer"
           />
         </Link>
+
+        {/* Desktop Navigation */}
         <nav className="hidden sm:block">
           <NavItems initialStocks={initialStocks} userEmail={userEmail} />
         </nav>
 
-        <UserDropdown user={user} initialStocks={initialStocks} />
+        <UserDropdown
+          user={user}
+          initialStocks={initialStocks}
+          userEmail={userEmail}
+        />
       </div>
     </header>
   );
