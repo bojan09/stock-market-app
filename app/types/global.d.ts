@@ -84,6 +84,28 @@ declare global {
     isInWatchlist: boolean;
   };
 
+  export interface StockQuote {
+    c: number; // Current price
+    d: number; // Change
+    dp: number; // Percent change
+    h: number; // High
+    l: number; // Low
+    o: number; // Open
+    pc: number; // Previous close
+    t: number; // Timestamp
+  }
+
+  export interface Stock {
+    symbol: string;
+    name: string;
+    exchange: string;
+    type: string;
+  }
+
+  export type StockWithWatchlistStatus = Stock & {
+    isInWatchlist: boolean;
+  };
+
   type FinnhubSearchResult = {
     symbol: string;
     description: string;
