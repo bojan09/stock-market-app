@@ -78,7 +78,7 @@ const Home = async () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0a] px-4 md:px-10 pt-4 pb-8 md:pt-6 md:pb-12 home-wrapper max-w-[1600px] mx-auto text-gray-100">
+    <div className="flex flex-col min-h-screen bg-[#0a0a0a] px-4 md:px-10 pt-4 pb-8 md:pt-6 md:pb-12 home-wrapper w-full mx-auto text-gray-100">
       {/* Header Area: Titles and Watchlist Performance */}
       <header className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center mb-10 border-b border-white/5 pb-10">
         <div className="flex flex-col justify-center">
@@ -90,13 +90,13 @@ const Home = async () => {
           </p>
         </div>
 
-        <div className="w-full h-full flex items-center">
+        <div className="w-full md:w-[55rem] h-full flex items-center md:items-start md:ml-[-12rem]">
           <DailyPerformers symbols={formattedWatchlist} />
         </div>
       </header>
 
       {/* Grid Section 1 */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10 mb-10">
+      <section className="w-full grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10 mb-10">
         <div className="col-span-1 space-y-4">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold px-1">
             Overview
@@ -123,7 +123,7 @@ const Home = async () => {
       </section>
 
       {/* Grid Section 2 */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10">
+      <section className="w-full grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10">
         <div className="col-span-1 space-y-4">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold px-1">
             Top Stories
