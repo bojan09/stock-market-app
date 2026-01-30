@@ -1,49 +1,78 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
-import NavItems from "@/components/NavItems";
-import UserDropdown from "@/components/UserDropdown";
-import { searchStocks } from "@/lib/actions/finnhub.actions";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { NAV_ITEMS } from "@/lib/constants";
 
-// Adjusting the local interface to ensure email is recognized
-interface HeaderProps {
-  user: {
-    id?: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  };
-}
-
-const Header = async ({ user }: HeaderProps) => {
-  // Fetch initial stocks for the search command
-  const initialStocks = await searchStocks();
-
-  // Extract the email safely
-  const userEmail = user?.email || "";
+const Header = () => {
+  const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 header">
-      <div className="container header-wrapper">
-        <Link href="/">
-          <Image
-            src="/assets/icons/logo.svg"
-            alt="Signalist logo"
-            width={140}
-            height={32}
-            className="h-8 w-auto cursor-pointer"
-          />
+    <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/60 backdrop-blur-xl">
+      <div className="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 md:px-10">
+        {/* LOGO AREA - Minimalist Design */}
+        <Link
+          href="/"
+          className="flex items-center gap-3 transition-transform active:scale-95"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-indigo-500"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
+          </svg>
+          <span className="text-lg font-bold tracking-tighter hidden sm:block text-white">
+            SIGNALIST
+          </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden sm:block">
-          <NavItems initialStocks={initialStocks} userEmail={userEmail} />
+        {/* NAVIGATION - Professional Spacing */}
+        <nav className="hidden md:flex items-center gap-10">
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "text-[13px] uppercase tracking-widest font-semibold transition-all hover:text-white",
+                pathname === item.href ? "text-indigo-500" : "text-gray-500",
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        <UserDropdown
-          user={user}
-          initialStocks={initialStocks}
-          userEmail={userEmail || ""}
-        />
+        {/* RIGHT SIDE ACTIONS */}
+        <div className="flex items-center gap-6">
+          {/* Minimalist Search Icon */}
+          <button className="text-gray-400 hover:text-white transition-colors">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </button>
+
+          {/* User Profile - Clean Circle */}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-700 to-gray-900 border border-white/10 shadow-inner cursor-pointer hover:border-indigo-500/50 transition-all" />
+        </div>
       </div>
     </header>
   );
