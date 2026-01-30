@@ -83,11 +83,7 @@ const Header = ({ user }: HeaderProps) => {
 
         {/* CLEAN USER DROPDOWN */}
         <div className="flex items-center">
-          <UserDropdown
-            user={user}
-            userEmail={user.email}
-            initialStocks={[]} // SearchCommand now handles live fetching internally
-          />
+          <UserDropdown user={user} userEmail={user.email} />
         </div>
       </div>
     </header>

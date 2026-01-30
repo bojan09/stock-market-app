@@ -30,7 +30,7 @@ const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
 
   const handleSignOut = async () => {
     await signOut();
-    router.refresh(); // Clear client cache
+    router.refresh();
     router.push("/sign-in");
   };
 
@@ -75,9 +75,30 @@ const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
           </DropdownMenuItem>
         </Link>
 
-        {/* Mobile Navigation Section */}
+        {/* Mobile Navigation */}
         <div className="md:hidden">
-          {/* ... (existing Dashboard/Watchlist/Search items) */}
+          <DropdownMenuItem
+            className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
+            onClick={() => router.push("/dashboard")}
+          >
+            <LayoutDashboard className="h-4 w-4 mr-3 text-gray-500" />
+            Dashboard
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onSelect={(e) => e.preventDefault()}
+            className="focus:bg-white/5 focus:text-white py-2.5"
+          >
+            <div className="flex items-center w-full">
+              <Search className="h-4 w-4 mr-3 text-gray-500" />
+              <SearchCommand
+                renderAs="text"
+                label="Search Stocks"
+                userEmail={userEmail}
+                className="w-full text-left"
+              />
+            </div>
+          </DropdownMenuItem>
         </div>
 
         <DropdownMenuSeparator className="bg-white/5" />
