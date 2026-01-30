@@ -5,6 +5,30 @@ import { Watchlist } from "@/database/models/watchlist.model";
 import { revalidatePath } from "next/cache";
 
 /**
+ * Fetches symbols using an Email address string.
+ * This directly queries the Watchlist collection for documents matching the email.
+ * Critical for background Inngest functions.
+ */
+export async function getWatchlistSymbolsByEmail(
+  email: string,
+): Promise<string[]> {
+  if (!email) return [];
+  try {
+    await connectToDatabase();
+
+    // Querying the Watchlist directly by email field
+    const items = await Watchlist.find({ email: email })
+      .select("symbol")
+      .lean();
+
+    return items.map((i) => String(i.symbol).toUpperCase());
+  } catch (err) {
+    console.error("Fetch symbols by email error:", err);
+    return [];
+  }
+}
+
+/**
  * Fetches symbols using the unique User ID.
  * Standardizes symbols to uppercase for UI consistency.
  */

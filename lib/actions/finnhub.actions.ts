@@ -1,8 +1,37 @@
 "use server";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDateRange, validateArticle, formatArticle } from "@/lib/utils";
 import { POPULAR_STOCK_SYMBOLS } from "@/lib/constants";
 import { cache } from "react";
+
+// --- START: Added Interfaces to fix Screenshot 4 Errors ---
+interface FinnhubProfile {
+  name?: string;
+  ticker?: string;
+  exchange?: string;
+  logo?: string;
+  weburl?: string;
+  industry?: string;
+}
+
+interface FinnhubStockSymbol {
+  symbol: string;
+  displaySymbol: string;
+  description: string;
+  type: string;
+  currency: string;
+}
+
+interface FinnhubQuote {
+  c: number; // Current price
+  h: number; // High price
+  l: number; // Low price
+  o: number; // Open price
+  pc: number; // Previous close
+  d: number; // Change
+  dp: number; // Percent change
+}
+// --- END: Added Interfaces ---
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const NEXT_PUBLIC_FINNHUB_API_KEY =
@@ -42,7 +71,6 @@ export async function getNews(
 
     const maxArticles = 6;
 
-    // If we have symbols, try to fetch company news per symbol and round-robin select
     if (cleanSymbols.length > 0) {
       const perSymbolArticles: Record<string, RawNewsArticle[]> = {};
 
@@ -60,7 +88,6 @@ export async function getNews(
       );
 
       const collected: MarketNewsArticle[] = [];
-      // Round-robin up to 6 picks
       for (let round = 0; round < maxArticles; round++) {
         for (let i = 0; i < cleanSymbols.length; i++) {
           const sym = cleanSymbols[i];
@@ -75,14 +102,11 @@ export async function getNews(
       }
 
       if (collected.length > 0) {
-        // Sort by datetime desc
         collected.sort((a, b) => (b.datetime || 0) - (a.datetime || 0));
         return collected.slice(0, maxArticles);
       }
-      // If none collected, fall through to general news
     }
 
-    // General market news fallback or when no symbols provided
     const generalUrl = `${FINNHUB_BASE_URL}/news?category=general&token=${token}`;
     const general = await fetchJSON<RawNewsArticle[]>(generalUrl, 300);
 
@@ -94,7 +118,7 @@ export async function getNews(
       if (seen.has(key)) continue;
       seen.add(key);
       unique.push(art);
-      if (unique.length >= 20) break; // cap early before final slicing
+      if (unique.length >= 20) break;
     }
 
     const formatted = unique
@@ -112,7 +136,6 @@ export const searchStocks = cache(
     try {
       const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
       if (!token) {
-        // If no token, log and return empty to avoid throwing per requirements
         console.error(
           "Error in stock search:",
           new Error("FINNHUB API key is not configured"),
@@ -121,43 +144,38 @@ export const searchStocks = cache(
       }
 
       const trimmed = typeof query === "string" ? query.trim() : "";
-
       let results: FinnhubSearchResult[] = [];
 
       if (!trimmed) {
-        // Fetch top 10 popular symbols' profiles
         const top = POPULAR_STOCK_SYMBOLS.slice(0, 10);
         const profiles = await Promise.all(
           top.map(async (sym) => {
             try {
               const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
-              // Revalidate every hour
-              const profile = await fetchJSON<any>(url, 3600);
-              return { sym, profile } as { sym: string; profile: any };
+              // FIXED: Changed fetchJSON<any> to fetchJSON<FinnhubProfile>
+              const profile = await fetchJSON<FinnhubProfile>(url, 3600);
+              return { sym, profile };
             } catch (e) {
               console.error("Error fetching profile2 for", sym, e);
-              return { sym, profile: null } as { sym: string; profile: any };
+              return { sym, profile: null };
             }
           }),
         );
 
         results = profiles
           .map(({ sym, profile }) => {
+            if (!profile) return undefined;
             const symbol = sym.toUpperCase();
-            const name: string | undefined =
-              profile?.name || profile?.ticker || undefined;
-            const exchange: string | undefined = profile?.exchange || undefined;
-            if (!name) return undefined;
+            const name = profile.name || profile.ticker || symbol;
+
             const r: FinnhubSearchResult = {
               symbol,
               description: name,
               displaySymbol: symbol,
               type: "Common Stock",
             };
-            // We don't include exchange in FinnhubSearchResult type, so carry via mapping later using profile
-            // To keep pipeline simple, attach exchange via closure map stage
-            // We'll reconstruct exchange when mapping to final type
-            (r as any).__exchange = exchange; // internal only
+            // Internal hack to pass exchange through mapping
+            (r as any).__exchange = profile.exchange;
             return r;
           })
           .filter((x): x is FinnhubSearchResult => Boolean(x));
@@ -171,18 +189,13 @@ export const searchStocks = cache(
         .map((r) => {
           const upper = (r.symbol || "").toUpperCase();
           const name = r.description || upper;
-          const exchangeFromDisplay =
-            (r.displaySymbol as string | undefined) || undefined;
-          const exchangeFromProfile = (r as any).__exchange as
-            | string
-            | undefined;
-          const exchange = exchangeFromDisplay || exchangeFromProfile || "US";
-          const type = r.type || "Stock";
+          const exchange =
+            (r as any).__exchange || (r.displaySymbol as string) || "US";
           const item: StockWithWatchlistStatus = {
             symbol: upper,
             name,
             exchange,
-            type,
+            type: r.type || "Stock",
             isInWatchlist: false,
           };
           return item;
@@ -202,15 +215,16 @@ export async function getStockQuote(symbol: string) {
     const response = await fetch(
       `https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
     );
-    const data = await response.json();
+    // FIXED: Typed response as FinnhubQuote to fix L176 and L235 any errors
+    const data: FinnhubQuote = await response.json();
     return {
-      current: data.c, // Current price
-      high: data.h, // High price of the day
-      low: data.l, // Low price of the day
-      open: data.o, // Open price of the day
-      previousClose: data.pc, // Previous close price
-      change: data.d, // Change
-      percentChange: data.dp, // Percent change
+      current: data.c,
+      high: data.h,
+      low: data.l,
+      open: data.o,
+      previousClose: data.pc,
+      change: data.d,
+      percentChange: data.dp,
     };
   } catch (error) {
     console.error(`Error fetching quote for ${symbol}:`, error);
@@ -218,11 +232,6 @@ export async function getStockQuote(symbol: string) {
   }
 }
 
-/**
- * Optimized Server Action to get random market suggestions
- * Fetches the full US stock list on the server, filters out watched symbols,
- * and returns only 10 randomized items.
- */
 export async function getRandomMarketSuggestions(
   watchedSymbols: string[],
 ): Promise<StockWithWatchlistStatus[]> {
@@ -230,20 +239,18 @@ export async function getRandomMarketSuggestions(
     const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
     if (!token) throw new Error("FINNHUB API key is not configured");
 
-    // Fetch the full symbol list (Cache for 24 hours)
     const url = `${FINNHUB_BASE_URL}/stock/symbol?exchange=US&token=${token}`;
-    const allStocks = await fetchJSON<any[]>(url, 86400);
+    // FIXED: Changed fetchJSON<any[]> to fetchJSON<FinnhubStockSymbol[]>
+    const allStocks = await fetchJSON<FinnhubStockSymbol[]>(url, 86400);
 
     const uppercaseWatched = watchedSymbols.map((s) => s.toUpperCase());
 
-    // Filter for Common Stocks not in the user's watchlist
     const available = allStocks.filter(
       (s) =>
         s.type === "Common Stock" &&
         !uppercaseWatched.includes(s.symbol.toUpperCase()),
     );
 
-    // Shuffle and pick 10
     const shuffled = [...available].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10).map((s) => ({
       symbol: s.symbol,

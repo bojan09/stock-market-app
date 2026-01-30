@@ -7,7 +7,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp, Star, RefreshCw } from "lucide-react";
+import { Loader2, TrendingUp, Star } from "lucide-react";
 import Link from "next/link";
 import {
   searchStocks,
@@ -128,6 +128,7 @@ export default function SearchCommand({
         ),
       );
       toast.error("Update failed.");
+      console.log(error);
     } finally {
       setIsPending(false);
     }

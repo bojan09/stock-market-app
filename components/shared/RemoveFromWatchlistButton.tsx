@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 interface RemoveButtonProps {
   symbol: string;
-  userId: string; // Updated from userEmail
+  userId: string; // Corrected prop to match Screenshot 9
 }
 
 export default function RemoveFromWatchlistButton({
@@ -17,17 +17,26 @@ export default function RemoveFromWatchlistButton({
   const [isPending, setIsPending] = useState(false);
 
   const handleRemove = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent Link navigation
+    e.preventDefault();
     e.stopPropagation();
+
+    if (!userId) {
+      toast.error("User session not found");
+      return;
+    }
 
     setIsPending(true);
     try {
+      // Toggle using userId
       const result = await toggleWatchlist(userId, symbol, "");
       if (result.success) {
         toast.success(`Removed ${symbol} from watchlist`);
+      } else {
+        toast.error("Failed to remove item");
       }
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error("Something went wrong");
+      console.error(error);
     } finally {
       setIsPending(false);
     }
