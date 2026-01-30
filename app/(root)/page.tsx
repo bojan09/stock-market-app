@@ -23,12 +23,9 @@ const Home = async () => {
     ? await Watchlist.find({ userId: session.user.id })
     : [];
 
-  //    * Helper to resolve exchange prefixes.
   const getTradingViewSymbol = (symbol: string) => {
     const s = symbol.toUpperCase();
     if (s.includes(":")) return s;
-
-    // Known NYSE stocks that fail with NASDAQ: prefix
     const nyseStocks = [
       "ORCL",
       "CRM",
@@ -39,27 +36,17 @@ const Home = async () => {
       "DIS",
       "JPM",
       "NKE",
-      "BA",
-      "GS",
-      "WMT",
-      "IBM",
-      "AXP",
     ];
-
     if (nyseStocks.includes(s)) return `NYSE:${s}`;
     if (s === "SPY") return "AMEX:SPY";
-
-    // Default to NASDAQ for most tech/growth stocks
     return `NASDAQ:${s}`;
   };
 
-  // 3. Format symbols for the TradingView Widgets
   const formattedWatchlist = dbWatchlist.map((item) => ({
     s: getTradingViewSymbol(item.symbol),
     d: item.company || item.symbol,
   }));
 
-  // 4. Generate Dynamic Configurations
   const dynamicOverviewConfig =
     MARKET_OVERVIEW_WIDGET_CONFIG(formattedWatchlist);
 
@@ -82,46 +69,66 @@ const Home = async () => {
   };
 
   return (
-    <div className="flex min-h-screen home-wrapper">
+    <div className="flex flex-col min-h-screen bg-[#0a0a0a] px-4 md:px-10 py-8 home-wrapper max-w-[2100px] mx-auto text-gray-100">
+      {/* Header Area */}
+      <div className="mb-8 border-b border-gray-800 pb-4">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          Market Dashboard
+        </h1>
+        <p className="text-gray-400 text-sm md:text-base mt-1">
+          Real-time market insights and your personal watchlist.
+        </p>
+      </div>
+
+      {/* Section 1: Overview and Heatmap */}
       <section className="grid w-full gap-8 home-section">
-        {/* Upper Section: Market Overview & Heatmap */}
-        <div className="md:col-span-1 xl:col-span-1">
+        <div className="col-span-1 space-y-4">
+          {/* UI FIX: Responsive Title Scaling */}
+          <h2 className="text-lg md:text-xl font-semibold px-1">
+            Market Overview
+          </h2>
           <TradingViewWidget
-            title="Market Overview"
             scriptUrl={`${scriptUrl}market-overview.js`}
             config={dynamicOverviewConfig}
-            className="custom-chart"
-            height={600}
+            height={500}
+            className="rounded-2xl border border-gray-800 shadow-2xl overflow-hidden"
           />
         </div>
 
-        <div className="md:col-span-1 xl:col-span-2">
+        <div className="col-span-1 xl:col-span-2 space-y-4">
+          <h2 className="text-lg md:text-xl font-semibold px-1">
+            Global Heatmap
+          </h2>
           <TradingViewWidget
-            title="Stock Heatmap"
             scriptUrl={`${scriptUrl}stock-heatmap.js`}
             config={HEATMAP_WIDGET_CONFIG}
-            height={600}
+            height={500}
+            className="rounded-2xl border border-gray-800 shadow-2xl overflow-hidden"
           />
         </div>
       </section>
 
-      <section className="grid w-full gap-8 mt-8 home-section">
-        {/* Lower Section: News Timeline & Market Quotes */}
-        <div className="h-full md:col-span-1 xl:col-span-1">
+      {/* Section 2: News and Quotes */}
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10">
+        <div className="col-span-1 space-y-4">
+          <h2 className="text-lg md:text-xl font-semibold px-1">Top Stories</h2>
           <TradingViewWidget
-            title="Top Stories"
             scriptUrl={`${scriptUrl}timeline.js`}
             config={TOP_STORIES_WIDGET_CONFIG}
-            height={600}
+            height={550}
+            className="rounded-2xl border border-gray-800 shadow-2xl overflow-hidden"
           />
         </div>
 
-        <div className="h-full md:col-span-1 xl:col-span-2">
+        <div className="col-span-1 xl:col-span-2 space-y-4">
+          <h2 className="text-lg md:text-xl font-semibold px-1">
+            Market Quotes
+          </h2>
           <TradingViewWidget
-            title="Market Quotes"
             scriptUrl={`${scriptUrl}market-quotes.js`}
             config={dynamicMarketDataConfig}
-            height={600}
+            height={550}
+            className="rounded-2xl border border-gray-800 shadow-2xl overflow-hidden"
           />
         </div>
       </section>

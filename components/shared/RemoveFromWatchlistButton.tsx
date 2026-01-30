@@ -35,7 +35,7 @@ export default function RemoveFromWatchlistButton({
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="group/btn p-3 rounded-xl bg-red-500/5 border border-red-500/10 text-red-500/50 hover:bg-red-500 hover:text-white hover:border-red-500 hover:cursor-pointer transition-all duration-200 disabled:opacity-50 z-50"
+      className="group/btn p-3 rounded-full bg-red-500/5 border border-red-500/10 text-red-500/50 hover:bg-red-500 hover:text-white hover:border-red-500 hover:cursor-pointer transition-all duration-200 disabled:opacity-50 z-50"
       title="Remove from watchlist"
     >
       <Trash2
