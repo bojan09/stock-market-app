@@ -1,5 +1,5 @@
-"use server";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use server";
 import { getDateRange, validateArticle, formatArticle } from "@/lib/utils";
 import { POPULAR_STOCK_SYMBOLS } from "@/lib/constants";
 import { cache } from "react";
