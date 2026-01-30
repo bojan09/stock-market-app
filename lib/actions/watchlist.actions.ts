@@ -55,3 +55,32 @@ export async function toggleWatchlist(
     return { success: false };
   }
 }
+
+export async function getPaginatedWatchlist(
+  email: string,
+  page: number = 1,
+  limit: number = 5,
+) {
+  if (!email) return { symbols: [], total: 0 };
+  try {
+    await connectToDatabase();
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Watchlist.find({ userId: email })
+        .sort({ addedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Watchlist.countDocuments({ userId: email }),
+    ]);
+
+    return {
+      symbols: items.map((i) => String(i.symbol).toUpperCase()),
+      total,
+    };
+  } catch (err) {
+    console.error("Pagination error:", err);
+    return { symbols: [], total: 0 };
+  }
+}

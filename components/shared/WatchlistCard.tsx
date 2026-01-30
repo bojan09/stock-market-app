@@ -1,39 +1,93 @@
-"use client";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getStockQuote } from "@/lib/actions/finnhub.actions";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import RemoveFromWatchlistButton from "./RemoveFromWatchlistButton";
 
-export default function WatchlistCard({ symbol }: { symbol: string }) {
-  const [data, setData] = useState<any>(null);
+interface WatchlistCardProps {
+  symbol: string;
+  userEmail: string;
+}
 
-  useEffect(() => {
-    getStockQuote(symbol).then(setData);
-  }, [symbol]);
+export default async function WatchlistCard({
+  symbol,
+  userEmail,
+}: WatchlistCardProps) {
+  const quote = await getStockQuote(symbol);
 
-  if (!data)
-    return <div className="h-24 bg-[#1A1D23] animate-pulse rounded-2xl" />;
+  if (!quote || quote.current === 0) return null;
 
-  const isPositive = data.dp >= 0;
+  const isPositive = (quote.percentChange ?? 0) >= 0;
 
   return (
-    <div className="bg-[#1A1D23] p-5 rounded-2xl flex justify-between items-center border border-gray-800/50 hover:bg-[#1E2229] transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-[#262A31] rounded-xl flex items-center justify-center font-bold text-gray-300">
-          {symbol[0]}
+    <div className="group flex items-center gap-3 w-full">
+      {/* Main Stock Link */}
+      <Link href={`/stocks/${symbol.toLowerCase()}`} className="flex-1">
+        <div className="flex items-center justify-between p-5 bg-[#1A1D23] hover:bg-[#23272F] rounded-2xl border border-gray-800 transition-all duration-200">
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                "p-3 rounded-xl",
+                isPositive
+                  ? "bg-green-500/10 text-green-500"
+                  : "bg-red-500/10 text-red-500",
+              )}
+            >
+              {isPositive ? (
+                <TrendingUp size={22} />
+              ) : (
+                <TrendingDown size={22} />
+              )}
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-white uppercase tracking-tight">
+                {symbol}
+              </h3>
+              <p className="text-xs text-gray-500 font-medium">
+                Open:{" "}
+                <span className="text-gray-300">
+                  ${quote.open?.toFixed(2) ?? "0.00"}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 md:gap-10">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">
+                Prev. Close
+              </p>
+              <p className="font-medium text-gray-300">
+                ${quote.previousClose?.toFixed(2) ?? "0.00"}
+              </p>
+            </div>
+
+            <div className="text-right min-w-[90px]">
+              <p className="font-bold text-xl text-white">
+                ${quote.current?.toFixed(2) ?? "0.00"}
+              </p>
+              <p
+                className={cn(
+                  "text-sm font-bold mt-0.5",
+                  isPositive ? "text-green-500" : "text-red-500",
+                )}
+              >
+                {isPositive ? "+" : ""}
+                {quote.percentChange?.toFixed(2) ?? "0.00"}%
+              </p>
+            </div>
+
+            <ChevronRight
+              className="text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all"
+              size={20}
+            />
+          </div>
         </div>
-        <div>
-          <h4 className="font-bold text-white text-lg">{symbol}</h4>
-          <p className="text-gray-500 text-xs">Market Price</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <p className="font-bold text-white text-xl">${data.c?.toFixed(2)}</p>
-        <div
-          className={`flex items-center gap-1 justify-end font-medium ${isPositive ? "text-green-400" : "text-red-400"}`}
-        >
-          {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          <span>{Math.abs(data.dp).toFixed(2)}%</span>
-        </div>
+      </Link>
+
+      {/* Remove Button - Now clearly separated with space */}
+      <div className="flex items-center justify-center pr-2">
+        <RemoveFromWatchlistButton symbol={symbol} userEmail={userEmail} />
       </div>
     </div>
   );

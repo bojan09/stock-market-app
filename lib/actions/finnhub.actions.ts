@@ -197,19 +197,23 @@ export const searchStocks = cache(
   },
 );
 
-export async function getStockQuote(
-  symbol: string,
-): Promise<StockQuote | null> {
+export async function getStockQuote(symbol: string) {
   try {
-    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
-    if (!token) throw new Error("FINNHUB API key is not configured");
-
-    const url = `${FINNHUB_BASE_URL}/quote?symbol=${symbol.toUpperCase()}&token=${token}`;
-
-    // Using StockQuote interface instead of <any>
-    return await fetchJSON<StockQuote>(url);
-  } catch (err) {
-    console.error("getStockQuote error:", err);
+    const response = await fetch(
+      `https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+    );
+    const data = await response.json();
+    return {
+      current: data.c, // Current price
+      high: data.h, // High price of the day
+      low: data.l, // Low price of the day
+      open: data.o, // Open price of the day
+      previousClose: data.pc, // Previous close price
+      change: data.d, // Change
+      percentChange: data.dp, // Percent change
+    };
+  } catch (error) {
+    console.error(`Error fetching quote for ${symbol}:`, error);
     return null;
   }
 }
