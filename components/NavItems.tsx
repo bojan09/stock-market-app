@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import SearchCommand from "@/components/SearchCommand";
 import { cn } from "@/lib/utils";
 
-const NavItems = ({ initialStocks, userEmail }: any) => {
+const NavItems = ({ userEmail }: any) => {
   const pathname = usePathname();
 
   return (
@@ -23,7 +23,6 @@ const NavItems = ({ initialStocks, userEmail }: any) => {
               <SearchCommand
                 renderAs="text"
                 label={label}
-                initialStocks={initialStocks}
                 userEmail={userEmail}
                 className={cn(
                   "transition-colors hover:text-white cursor-pointer",

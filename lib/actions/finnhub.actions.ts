@@ -217,3 +217,45 @@ export async function getStockQuote(symbol: string) {
     return null;
   }
 }
+
+/**
+ * Optimized Server Action to get random market suggestions
+ * Fetches the full US stock list on the server, filters out watched symbols,
+ * and returns only 10 randomized items.
+ */
+export async function getRandomMarketSuggestions(
+  watchedSymbols: string[],
+): Promise<StockWithWatchlistStatus[]> {
+  try {
+    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    if (!token) throw new Error("FINNHUB API key is not configured");
+
+    // Fetch the full symbol list (Cache for 24 hours)
+    const url = `${FINNHUB_BASE_URL}/stock/symbol?exchange=US&token=${token}`;
+    const allStocks = await fetchJSON<any[]>(url, 86400);
+
+    const uppercaseWatched = watchedSymbols.map((s) => s.toUpperCase());
+
+    // Filter for Common Stocks not in the user's watchlist
+    const available = allStocks.filter(
+      (s) =>
+        s.type === "Common Stock" &&
+        !uppercaseWatched.includes(s.symbol.toUpperCase()),
+    );
+
+    // Shuffle and pick 10
+    const shuffled = [...available].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 10).map((s) => ({
+      symbol: s.symbol,
+      name: s.description || s.displaySymbol,
+      exchange: "US",
+      type: s.type,
+      isInWatchlist: false,
+    }));
+
+    return selected;
+  } catch (err) {
+    console.error("getRandomMarketSuggestions error:", err);
+    return [];
+  }
+}
