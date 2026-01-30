@@ -60,7 +60,7 @@ const Header = ({ user }: HeaderProps) => {
                   <SearchCommand
                     renderAs="text"
                     label={item.label}
-                    userEmail={user.email}
+                    userId={user.id}
                   />
                 </div>
               );
@@ -81,9 +81,9 @@ const Header = ({ user }: HeaderProps) => {
           })}
         </nav>
 
-        {/* CLEAN USER DROPDOWN */}
+        {/* USER DROPDOWN */}
         <div className="flex items-center">
-          <UserDropdown user={user} userEmail={user.email} />
+          <UserDropdown user={user} userId={user.id} />
         </div>
       </div>
     </header>

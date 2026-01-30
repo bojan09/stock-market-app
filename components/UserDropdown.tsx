@@ -11,10 +11,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Search, LayoutDashboard, Star } from "lucide-react";
+import { LogOut, Search, LayoutDashboard, ListOrdered } from "lucide-react";
 import { signOut } from "@/lib/actions/auth.actions";
 import SearchCommand from "./SearchCommand";
-import Link from "next/link";
 
 interface UserDropdownProps {
   user: {
@@ -22,10 +21,10 @@ interface UserDropdownProps {
     email?: string | null;
     image?: string | null;
   };
-  userEmail: string;
+  userId: string; // Updated from userEmail to userId to match your latest actions
 }
 
-const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
+const UserDropdown = ({ user, userId }: UserDropdownProps) => {
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -68,14 +67,7 @@ const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
 
         <DropdownMenuSeparator className="bg-white/5" />
 
-        <Link href="/profile">
-          <DropdownMenuItem className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5">
-            <User className="h-4 w-4 mr-3 text-gray-500" />
-            Profile Settings
-          </DropdownMenuItem>
-        </Link>
-
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Section */}
         <div className="md:hidden">
           <DropdownMenuItem
             className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
@@ -83,6 +75,15 @@ const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
           >
             <LayoutDashboard className="h-4 w-4 mr-3 text-gray-500" />
             Dashboard
+          </DropdownMenuItem>
+
+          {/* NEW: Watchlist Item for Mobile */}
+          <DropdownMenuItem
+            className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
+            onClick={() => router.push("/watchlist")}
+          >
+            <ListOrdered className="h-4 w-4 mr-3 text-gray-500" />
+            Watchlist
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -94,7 +95,7 @@ const UserDropdown = ({ user, userEmail }: UserDropdownProps) => {
               <SearchCommand
                 renderAs="text"
                 label="Search Stocks"
-                userEmail={userEmail}
+                userId={userId}
                 className="w-full text-left"
               />
             </div>

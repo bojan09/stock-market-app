@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   CommandDialog,
-  CommandEmpty,
   CommandInput,
   CommandList,
 } from "@/components/ui/command";
@@ -16,7 +15,7 @@ import {
 } from "@/lib/actions/finnhub.actions";
 import {
   toggleWatchlist,
-  getWatchlistSymbolsByEmail,
+  getWatchlistSymbolsById,
 } from "@/lib/actions/watchlist.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
@@ -33,14 +32,14 @@ type StockWithWatchlistStatus = {
 interface SearchCommandProps {
   renderAs?: "button" | "text";
   label?: string;
-  userEmail: string;
+  userId: string; // Changed from userEmail
   className?: string;
 }
 
 export default function SearchCommand({
   renderAs = "button",
   label,
-  userEmail,
+  userId,
   className,
 }: SearchCommandProps) {
   const [open, setOpen] = useState(false);
@@ -49,15 +48,11 @@ export default function SearchCommand({
   const [isPending, setIsPending] = useState(false);
   const [stocks, setStocks] = useState<StockWithWatchlistStatus[]>([]);
 
-  /**
-   * GET SUGGESTIONS (Server-side optimized)
-   */
   const getSuggestions = useCallback(async () => {
-    if (!userEmail) return;
+    if (!userId) return;
     setLoading(true);
     try {
-      const watchedSymbols = await getWatchlistSymbolsByEmail(userEmail);
-      // Fetches only 10 items from the server
+      const watchedSymbols = await getWatchlistSymbolsById(userId);
       const randomTen = await getRandomMarketSuggestions(watchedSymbols);
       setStocks(randomTen as StockWithWatchlistStatus[]);
     } catch (error) {
@@ -65,7 +60,7 @@ export default function SearchCommand({
     } finally {
       setLoading(false);
     }
-  }, [userEmail]);
+  }, [userId]);
 
   useEffect(() => {
     if (open && !searchTerm) {
@@ -73,9 +68,6 @@ export default function SearchCommand({
     }
   }, [open, searchTerm, getSuggestions]);
 
-  /**
-   * SEARCH LOGIC
-   */
   const handleSearch = useCallback(async () => {
     if (!searchTerm.trim()) return;
 
@@ -83,7 +75,7 @@ export default function SearchCommand({
     try {
       const [results, watchedSymbols] = await Promise.all([
         searchStocks(searchTerm.trim()),
-        getWatchlistSymbolsByEmail(userEmail),
+        getWatchlistSymbolsById(userId),
       ]);
 
       const uppercaseWatched = watchedSymbols.map((s: string) =>
@@ -101,23 +93,20 @@ export default function SearchCommand({
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, userEmail]);
+  }, [searchTerm, userId]);
 
   const debouncedSearch = useDebounce(handleSearch, 300);
   useEffect(() => {
     debouncedSearch();
   }, [searchTerm, debouncedSearch]);
 
-  /**
-   * WATCHLIST TOGGLE
-   */
   const handleWatchlistToggle = async (
     e: React.MouseEvent,
     stock: StockWithWatchlistStatus,
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!userEmail || isPending) return;
+    if (!userId || isPending) return;
 
     const isAdding = !stock.isInWatchlist;
     setStocks((prev) =>
@@ -128,14 +117,10 @@ export default function SearchCommand({
     setIsPending(true);
 
     try {
-      const result = await toggleWatchlist(userEmail, stock.symbol, stock.name);
+      const result = await toggleWatchlist(userId, stock.symbol, stock.name);
       if (!result.success) throw new Error();
 
       toast.success(`${stock.symbol} ${isAdding ? "added" : "removed"}`);
-
-      if (isAdding && !searchTerm) {
-        setStocks((prev) => prev.filter((s) => s.symbol !== stock.symbol));
-      }
     } catch (error) {
       setStocks((prev) =>
         prev.map((s) =>
@@ -177,20 +162,6 @@ export default function SearchCommand({
         </div>
 
         <CommandList className="bg-[#121212] overflow-y-auto max-h-[400px]">
-          {!searchTerm && (
-            <div className="px-4 py-3 flex justify-between items-center border-b border-white/5 bg-white/5">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-indigo-400">
-                Live Suggestions
-              </p>
-              <button
-                onClick={getSuggestions}
-                className="hover:rotate-180 transition-transform duration-500"
-              >
-                <RefreshCw className="h-3 w-3 text-gray-500" />
-              </button>
-            </div>
-          )}
-
           <div className="py-2">
             {stocks.map((stock, index) => (
               <Link

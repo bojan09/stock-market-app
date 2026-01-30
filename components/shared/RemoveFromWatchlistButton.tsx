@@ -1,31 +1,33 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
-import { toggleWatchlist } from "@/lib/actions/watchlist.actions";
 import { useState } from "react";
+import { Trash2, Loader2 } from "lucide-react";
+import { toggleWatchlist } from "@/lib/actions/watchlist.actions";
 import { toast } from "sonner";
+
+interface RemoveButtonProps {
+  symbol: string;
+  userId: string; // Updated from userEmail
+}
 
 export default function RemoveFromWatchlistButton({
   symbol,
-  userEmail,
-}: {
-  symbol: string;
-  userEmail: string;
-}) {
+  userId,
+}: RemoveButtonProps) {
   const [isPending, setIsPending] = useState(false);
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Stop Link navigation
-    e.stopPropagation(); // Stop event bubbling
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent Link navigation
+    e.stopPropagation();
 
     setIsPending(true);
     try {
-      const res = await toggleWatchlist(userEmail, symbol, "");
-      if (res.success) {
-        toast.error(`${symbol} removed from watchlist`, {});
+      const result = await toggleWatchlist(userId, symbol, "");
+      if (result.success) {
+        toast.success(`Removed ${symbol} from watchlist`);
       }
     } catch (error) {
-      toast.error("Failed to remove asset");
+      toast.error("Failed to remove item");
     } finally {
       setIsPending(false);
     }
@@ -33,15 +35,15 @@ export default function RemoveFromWatchlistButton({
 
   return (
     <button
-      onClick={handleDelete}
+      onClick={handleRemove}
       disabled={isPending}
-      className="group/btn p-3 rounded-full bg-red-500/5 border border-red-500/10 text-red-500/50 hover:bg-red-500 hover:text-white hover:border-red-500 hover:cursor-pointer transition-all duration-200 disabled:opacity-50 z-50"
-      title="Remove from watchlist"
+      className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white disabled:opacity-50 shadow-lg border border-red-500/20"
     >
-      <Trash2
-        size={18}
-        className="transition-transform group-hover/btn:scale-110"
-      />
+      {isPending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Trash2 className="h-4 w-4" />
+      )}
     </button>
   );
 }
