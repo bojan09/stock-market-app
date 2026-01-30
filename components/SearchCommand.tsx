@@ -27,6 +27,7 @@ interface SearchCommandProps {
   label?: string;
   initialStocks: Stock[];
   userEmail: string;
+  className: string;
 }
 
 export default function SearchCommand({
@@ -34,6 +35,7 @@ export default function SearchCommand({
   label,
   initialStocks,
   userEmail,
+  className,
 }: SearchCommandProps) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

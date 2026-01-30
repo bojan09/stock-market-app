@@ -1,7 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { getPaginatedWatchlist } from "@/lib/actions/watchlist.actions";
 import WatchlistCard from "@/components/shared/WatchlistCard";
+import RefreshWatchlistButton from "@/components/shared/RefreshWatchlistButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -16,7 +19,7 @@ export default async function WatchlistPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
-  const limit = 5; // Reduced to 5 per page
+  const limit = 5;
 
   const { symbols, total } = await getPaginatedWatchlist(
     session.user.email,
@@ -27,10 +30,15 @@ export default async function WatchlistPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white p-6 pb-24">
-      <header className="mb-8 max-w-5xl mx-auto flex justify-between items-end">
+      <header className="mb-8 max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Watchlist</h1>
           <p className="text-gray-400 text-sm mt-1">{total} Assets Tracked</p>
+        </div>
+
+        {/* ADDED REFRESH BUTTON */}
+        <div className="flex items-center gap-3">
+          <RefreshWatchlistButton />
         </div>
       </header>
 
@@ -80,14 +88,12 @@ export default async function WatchlistPage({ searchParams }: PageProps) {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 bg-[#1A1D23] rounded-3xl border border-dashed border-gray-800 text-center">
-            <p className="text-gray-400">
-              Your list is empty. Start starring stocks in search!
-            </p>
+            <p className="text-gray-400">Your list is empty.</p>
             <Link
               href="/search"
               className="mt-4 text-blue-400 hover:underline text-sm"
             >
-              Go to Search
+              Explore Markets
             </Link>
           </div>
         )}

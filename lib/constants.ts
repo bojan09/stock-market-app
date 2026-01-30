@@ -138,12 +138,12 @@ export const MARKET_DATA_WIDGET_CONFIG = {
     {
       name: "Financial",
       symbols: [
-        { name: "NYSE:JPM", displayName: "JPMorgan Chase" },
-        { name: "NYSE:WFC", displayName: "Wells Fargo Co New" },
-        { name: "NYSE:BAC", displayName: "Bank Amer Corp" },
-        { name: "NYSE:HSBC", displayName: "Hsbc Hldgs Plc" },
-        { name: "NYSE:C", displayName: "Citigroup Inc" },
-        { name: "NYSE:MA", displayName: "Mastercard Incorporated" },
+        { name: "ARCA:SPY", displayName: "SPDR S&P 500 ETF" },
+        { name: "NASDAQ:QQQ", displayName: "Invesco QQQ (Nasdaq 100)" },
+        { name: "NYSE:BLK", displayName: "BlackRock, Inc." },
+        { name: "NYSE:BRK.B", displayName: "Berkshire Hathaway" },
+        { name: "NYSE:V", displayName: "Visa Inc." },
+        { name: "NASDAQ:PYPL", displayName: "PayPal Holdings" },
       ],
     },
     {
