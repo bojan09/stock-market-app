@@ -1,16 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistNews } from "@/lib/actions/news.actions";
-import { Newspaper, ExternalLink, Clock } from "lucide-react";
+import { getAiMarketSummary } from "@/lib/actions/ai.actions";
+import {
+  getSavedNewsIds,
+  getSavedArticles,
+} from "@/lib/actions/savedNews.actions";
+import {
+  Newspaper,
+  Sparkles,
+  Clock,
+  ExternalLink,
+  Bookmark,
+  Tag,
+  Search,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-// Custom Bull and Bear SVGs
+import BookmarkButton from "@/components/shared/BookmarkButton";
+import SearchInput from "@/components/shared/SearchInput";
+
 const BullIcon = () => (
   <svg
-    width="60"
-    height="60"
+    width="50"
+    height="50"
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -31,11 +46,10 @@ const BullIcon = () => (
     />
   </svg>
 );
-
 const BearIcon = () => (
   <svg
-    width="60"
-    height="60"
+    width="50"
+    height="50"
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -52,152 +66,270 @@ const BearIcon = () => (
     <circle cx="17" cy="6" r="2" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
-
 const getSentiment = (headline: string) => {
-  const bullKeywords = [
-    "up",
-    "rise",
-    "gain",
-    "growth",
-    "buy",
-    "bull",
-    "positive",
-    "beat",
-    "higher",
-    "surge",
-    "profit",
-    "bullish",
-  ];
-  const bearKeywords = [
-    "down",
-    "fall",
-    "loss",
-    "drop",
-    "sell",
-    "bear",
-    "negative",
-    "miss",
-    "lower",
-    "plunge",
-    "crash",
-    "bearish",
-  ];
   const h = headline.toLowerCase();
-  const isBull = bullKeywords.some((word) => h.includes(word));
-  const isBear = bearKeywords.some((word) => h.includes(word));
-  if (isBull && !isBear) return "bullish";
-  if (isBear && !isBull) return "bearish";
+  if (["up", "rise", "gain", "bull"].some((w) => h.includes(w)))
+    return "bullish";
+  if (["down", "fall", "loss", "bear"].some((w) => h.includes(w)))
+    return "bearish";
   return "neutral";
 };
 
-export default async function NewsPage() {
+export default async function NewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string; category?: string; q?: string }>;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/sign-in");
 
-  const { articles, isGeneral, success } = await getWatchlistNews(
-    session.user.id,
-  );
+  const userId = session.user.id;
+  const {
+    filter,
+    category: selectedCategory,
+    q: searchQuery,
+  } = await searchParams;
+  const isSavedFilter = filter === "saved";
 
+  const [newsData, savedIds] = await Promise.all([
+    getWatchlistNews(userId),
+    getSavedNewsIds(userId),
+  ]);
+
+  const { articles: liveArticles, isGeneral, success } = newsData;
   if (!success)
     return (
-      <div className="text-center p-20 text-gray-400">Failed to load news.</div>
+      <div className="p-20 text-center text-gray-400 font-medium">
+        Failed to load news.
+      </div>
     );
+
+  // 1. Determine base article set
+  let articles = isSavedFilter ? await getSavedArticles(userId) : liveArticles;
+
+  // 2. Extract unique categories from the base set
+  const categories = Array.from(
+    new Set(articles.map((a: any) => a.category).filter(Boolean)),
+  );
+
+  // 3. Apply Filters (Category & Search)
+  if (selectedCategory) {
+    articles = articles.filter((a: any) => a.category === selectedCategory);
+  }
+
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    articles = articles.filter(
+      (a: any) =>
+        a.headline.toLowerCase().includes(query) ||
+        a.summary?.toLowerCase().includes(query),
+    );
+  }
+
+  const aiInsight = await getAiMarketSummary(liveArticles);
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white p-4 md:p-8 pb-24">
-      <header className="max-w-[1600px] mx-auto mb-10">
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <Newspaper className="text-blue-500" />
-          {isGeneral ? "Market News" : "Watchlist News"}
-        </h1>
-        <p className="text-gray-400 text-sm mt-2 font-medium tracking-tight">
-          {isGeneral
-            ? "Global market updates"
-            : "Updates for your tracked assets"}
-        </p>
-      </header>
+      <div className="max-w-400 mx-auto">
+        <header className="mb-10 space-y-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-6">
+              <h1 className="text-3xl font-bold flex items-center gap-3">
+                <Newspaper className="text-blue-500" />{" "}
+                {isGeneral ? "Global Market Pulse" : "Watchlist Intelligence"}
+              </h1>
 
-      {/* Grid updated to 4 columns on large screens */}
-      <main className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {articles.map((article: any) => {
-          const sentiment = getSentiment(article.headline);
-
-          return (
-            <a
-              key={article.id}
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col bg-[#16191F] border border-white/5 rounded-xl overflow-hidden hover:border-blue-500/40 hover:bg-[#1C2028] transition-all duration-300"
-            >
-              <div className="relative h-44 w-full bg-[#0F1115] overflow-hidden flex items-center justify-center">
-                {article.image ? (
-                  <Image
-                    src={article.image}
-                    alt={article.headline}
-                    fill
-                    className="object-cover opacity-60 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
-                    unoptimized
-                  />
-                ) : (
-                  <div
-                    className={`flex flex-col items-center gap-2 transition-transform duration-500 group-hover:scale-110 ${
-                      sentiment === "bullish"
-                        ? "text-emerald-500"
-                        : sentiment === "bearish"
-                          ? "text-rose-500"
-                          : "text-gray-700"
-                    }`}
+              <div className="flex flex-wrap items-center gap-4">
+                {/* FILTER TABS */}
+                <div className="flex items-center gap-1 bg-[#16191F] p-1 rounded-xl border border-white/5">
+                  <Link
+                    href="/news"
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
                   >
-                    {sentiment === "bullish" ? (
-                      <BullIcon />
-                    ) : sentiment === "bearish" ? (
-                      <BearIcon />
-                    ) : (
-                      <Newspaper size={40} className="opacity-20" />
-                    )}
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">
-                      {sentiment === "neutral" ? "Neutral Info" : sentiment}
-                    </span>
-                  </div>
-                )}
+                    All News
+                  </Link>
+                  <Link
+                    href="/news?filter=saved"
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
+                  >
+                    <Bookmark
+                      size={14}
+                      fill={isSavedFilter ? "white" : "none"}
+                    />
+                    Saved
+                  </Link>
+                </div>
 
-                <div className="absolute top-3 left-3">
-                  <span className="bg-[#0F1115]/80 backdrop-blur-md border border-white/10 text-[9px] font-bold px-2 py-1 rounded text-blue-400 uppercase tracking-wider">
-                    {article.related || "Market"}
-                  </span>
+                {/* SEARCH INPUT */}
+                <SearchInput defaultValue={searchQuery} />
+              </div>
+            </div>
+
+            {aiInsight?.score !== undefined && (
+              <div className="bg-[#16191F] border border-white/5 p-4 rounded-2xl min-w-70">
+                <div className="flex justify-between text-[10px] font-black uppercase mb-2">
+                  <span className="text-rose-500">Bearish</span>
+                  <span className="text-emerald-500">Bullish</span>
+                </div>
+                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-1000 ${aiInsight.score > 50 ? "bg-emerald-500" : "bg-rose-500"}`}
+                    style={{ width: `${aiInsight.score}%` }}
+                  />
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase mb-2">
-                  <span className="text-blue-500/80">{article.source}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={10} />{" "}
-                    {new Date(article.datetime * 1000).toLocaleDateString()}
-                  </span>
-                </div>
+          {/* TOPIC SCROLLBAR */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-gray-500 shrink-0">
+              <Tag size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                Topics
+              </span>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+              <Link
+                href={{
+                  pathname: "/news",
+                  query: {
+                    ...(filter && { filter }),
+                    ...(searchQuery && { q: searchQuery }),
+                  },
+                }}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap transition-all ${!selectedCategory ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
+              >
+                All Topics
+              </Link>
+              {categories.map((cat: any) => (
+                <Link
+                  key={cat}
+                  href={{
+                    pathname: "/news",
+                    query: {
+                      ...(filter && { filter }),
+                      ...(searchQuery && { q: searchQuery }),
+                      category: cat,
+                    },
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap capitalize transition-all ${selectedCategory === cat ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
+          </div>
 
-                <h2 className="text-base font-bold leading-snug line-clamp-2 group-hover:text-blue-400 transition-colors duration-300">
-                  {article.headline}
-                </h2>
-
-                <p className="text-xs text-gray-500 mt-2 line-clamp-3 leading-relaxed flex-1">
-                  {article.summary}
+          {!isSavedFilter && !searchQuery && aiInsight?.summary && (
+            <div className="p-5 bg-linear-to-br from-blue-600/10 via-[#16191F] to-purple-600/10 border border-blue-500/20 rounded-2xl">
+              <div className="flex items-center gap-4">
+                <Sparkles size={20} className="text-blue-400" />
+                <p className="text-gray-200 font-medium italic">
+                  "{aiInsight.summary}"
                 </p>
-
-                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-gray-500 group-hover:text-blue-400 transition-colors">
-                  <span className="uppercase tracking-widest">
-                    Read Article
-                  </span>
-                  <ExternalLink size={12} />
-                </div>
               </div>
-            </a>
-          );
-        })}
-      </main>
+            </div>
+          )}
+        </header>
+
+        {articles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-3xl text-center">
+            <Search size={40} className="text-gray-700 mb-4" />
+            <p className="text-gray-500 font-medium text-sm">
+              {searchQuery
+                ? `No results for "${searchQuery}"`
+                : "No articles found."}
+            </p>
+            <Link
+              href="/news"
+              className="mt-4 text-blue-500 text-xs font-bold hover:underline"
+            >
+              Clear all filters
+            </Link>
+          </div>
+        ) : (
+          <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {articles.map((article: any) => {
+              const sentiment = getSentiment(article.headline);
+              const isBookmarked = savedIds.includes(
+                String(article.id || article.articleId),
+              );
+
+              return (
+                <div
+                  key={article.id || article.articleId}
+                  className="group flex flex-col bg-[#16191F] border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/40 transition-all duration-300 relative"
+                >
+                  <div className="relative h-44 w-full bg-[#0F1115] flex items-center justify-center overflow-hidden">
+                    {article.image ? (
+                      <Image
+                        src={article.image}
+                        alt="news"
+                        fill
+                        className="object-cover opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : (
+                      <div
+                        className={
+                          sentiment === "bullish"
+                            ? "text-emerald-500"
+                            : sentiment === "bearish"
+                              ? "text-rose-500"
+                              : "text-gray-700"
+                        }
+                      >
+                        {sentiment === "bullish" ? (
+                          <BullIcon />
+                        ) : sentiment === "bearish" ? (
+                          <BearIcon />
+                        ) : (
+                          <Newspaper size={40} className="opacity-20" />
+                        )}
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 z-20">
+                      <BookmarkButton
+                        userId={userId}
+                        article={article}
+                        isInitialSaved={isBookmarked}
+                      />
+                    </div>
+                  </div>
+
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    className="p-5 flex flex-col flex-1"
+                  >
+                    <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase mb-3">
+                      <span className="text-blue-400">{article.source}</span>
+                      <span>•</span>
+                      <span className="capitalize">
+                        {article.category || "General"}
+                      </span>
+                    </div>
+                    <h2 className="text-base font-bold line-clamp-2 group-hover:text-blue-400 transition-colors">
+                      {article.headline}
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-3 line-clamp-3 flex-1 leading-relaxed">
+                      {article.summary}
+                    </p>
+                    <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-gray-400 group-hover:text-white transition-colors">
+                      <span className="flex items-center gap-1">
+                        <Clock size={10} />{" "}
+                        {new Date(article.datetime * 1000).toLocaleDateString()}
+                      </span>
+                      <ExternalLink size={12} />
+                    </div>
+                  </a>
+                </div>
+              );
+            })}
+          </main>
+        )}
+      </div>
     </div>
   );
 }
