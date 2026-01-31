@@ -26,7 +26,6 @@ async function fetchAiSummary(articles: any[]) {
     const cleanedJson = text.replace(/```json|```/g, "").trim();
     return JSON.parse(cleanedJson);
   } catch (error) {
-    // We catch the 429 error here so it doesn't bubble up and crash the page
     console.warn("AI Quota hit or API error. Falling back to null.");
     return null;
   }

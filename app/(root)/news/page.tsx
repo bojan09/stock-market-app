@@ -25,19 +25,26 @@ import SortDropdown from "@/components/shared/SortDropdown";
 import BackToTop from "@/components/shared/BackToTop";
 import InfiniteNewsList from "@/components/shared/InfiniteNewsList";
 
-// Sentiment logic duplicated here briefly for Server-Side Widget calculations
 const getSentimentServer = (headline: string) => {
   const h = headline.toLowerCase();
   if (
-    ["up", "rise", "gain", "bull", "surge", "higher", "profit"].some((w) =>
-      h.includes(w),
+    ["up", "rise", "gain", "bull", "surge", "higher", "profit", "buy"].some(
+      (w) => h.includes(w),
     )
   )
     return "bullish";
   if (
-    ["down", "fall", "loss", "bear", "drop", "lower", "debt", "crash"].some(
-      (w) => h.includes(w),
-    )
+    [
+      "down",
+      "fall",
+      "loss",
+      "bear",
+      "drop",
+      "lower",
+      "debt",
+      "crash",
+      "sell",
+    ].some((w) => h.includes(w))
   )
     return "bearish";
   return "neutral";
@@ -70,7 +77,6 @@ export default async function NewsPage({
     getSavedNewsIds(userId),
   ]);
   const { articles: liveArticles, isGeneral, success } = newsData;
-
   if (!success)
     return (
       <div className="p-20 text-center text-gray-400 font-medium">
@@ -78,6 +84,7 @@ export default async function NewsPage({
       </div>
     );
 
+  // Use saved articles if the filter is active
   let articles = isSavedFilter ? await getSavedArticles(userId) : liveArticles;
 
   if (selectedCategory)
@@ -95,25 +102,39 @@ export default async function NewsPage({
     sortBy === "oldest" ? a.datetime - b.datetime : b.datetime - a.datetime,
   );
 
+  // Heatmap Stats
   const tickerRegex = /\b[A-Z]{2,5}\b/g;
-  const tickerMap: Record<string, number> = {};
+  const tickerStats: Record<string, { count: number; score: number }> = {};
   articles.forEach((a: any) => {
     const matches = a.headline.match(tickerRegex);
-    if (matches)
+    if (matches) {
+      const sentiment = getSentimentServer(a.headline);
+      const points =
+        sentiment === "bullish" ? 1 : sentiment === "bearish" ? -1 : 0;
       matches.forEach((t: string) => {
-        if (!["NEWS", "USA", "FED", "CEO", "AI", "USD"].includes(t))
-          tickerMap[t] = (tickerMap[t] || 0) + 1;
+        if (!["NEWS", "USA", "FED", "CEO", "AI", "USD", "ETF"].includes(t)) {
+          if (!tickerStats[t]) tickerStats[t] = { count: 0, score: 0 };
+          tickerStats[t].count += 1;
+          tickerStats[t].score += points;
+        }
       });
+    }
   });
-  const trendingTickers = Object.entries(tickerMap)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 6);
+
+  const trendingTickers = Object.entries(tickerStats)
+    .sort(([, a], [, b]) => b.count - a.count)
+    .slice(0, 8)
+    .map(([ticker, stats]) => ({
+      ticker,
+      count: stats.count,
+      sentiment:
+        stats.score > 0 ? "bullish" : stats.score < 0 ? "bearish" : "neutral",
+    }));
 
   const categories = Array.from(
     new Set(articles.map((a: any) => a.category).filter(Boolean)),
   );
   const aiInsight = await getAiMarketSummary(liveArticles);
-
   const total = articles.length;
   const bullishCount = articles.filter(
     (a) => getSentimentServer(a.headline) === "bullish",
@@ -184,19 +205,17 @@ export default async function NewsPage({
           </div>
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
             <Tag size={14} className="text-gray-500 shrink-0" />
-            {["All Topics", ...categories].map((cat) => (
+            <Link
+              href="/news"
+              className={`px-4 py-1.5 rounded-full text-[11px] font-bold border transition-all ${!selectedCategory ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
+            >
+              All Topics
+            </Link>
+            {categories.map((cat: any) => (
               <Link
                 key={cat}
-                href={{
-                  pathname: "/news",
-                  query: {
-                    ...(filter && { filter }),
-                    ...(searchQuery && { q: searchQuery }),
-                    ...(sortBy && { sortBy }),
-                    ...(cat !== "All Topics" && { category: cat }),
-                  },
-                }}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap transition-all ${(cat === "All Topics" && !selectedCategory) || selectedCategory === cat ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
+                href={`/news?category=${cat}`}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap capitalize transition-all ${selectedCategory === cat ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
               >
                 {cat}
               </Link>
@@ -210,11 +229,14 @@ export default async function NewsPage({
               <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-3xl text-center">
                 <Search size={40} className="text-gray-700 mb-4" />
                 <p className="text-gray-500 font-medium text-sm">
-                  No articles found.
+                  {isSavedFilter
+                    ? "No saved articles found."
+                    : "No articles found."}
                 </p>
               </div>
             ) : (
               <InfiniteNewsList
+                key={isSavedFilter ? "saved" : "all"} // Key ensures state reset
                 initialArticles={articles}
                 userId={userId}
                 savedIds={savedIds}
@@ -240,7 +262,7 @@ export default async function NewsPage({
                 <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500"
-                    style={{ width: `${(bullishCount / total) * 100}%` }}
+                    style={{ width: `${(bullishCount / (total || 1)) * 100}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
@@ -252,10 +274,11 @@ export default async function NewsPage({
                 <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-rose-500"
-                    style={{ width: `${(bearishCount / total) * 100}%` }}
+                    style={{ width: `${(bearishCount / (total || 1)) * 100}%` }}
                   />
                 </div>
               </div>
+
               <div className="mt-10 pt-6 border-t border-white/5">
                 <div className="flex items-center gap-3 mb-4">
                   <Building2 className="text-blue-400" size={18} />
@@ -264,13 +287,15 @@ export default async function NewsPage({
                   </h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {trendingTickers.map(([ticker, count]) => (
+                  {trendingTickers.map(({ ticker, count, sentiment }) => (
                     <Link
                       key={ticker}
                       href={`/news?q=${ticker}`}
-                      className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-all ${count > 3 ? "bg-blue-500/10 border-blue-500/30 animate-pulse" : "bg-white/5 border-white/5"}`}
+                      className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-all group ${sentiment === "bullish" ? "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40" : sentiment === "bearish" ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/40" : "bg-white/5 border-white/5 hover:border-white/20"}`}
                     >
-                      <span className="text-[11px] font-black text-blue-400">
+                      <span
+                        className={`text-[11px] font-black ${sentiment === "bullish" ? "text-emerald-400" : sentiment === "bearish" ? "text-rose-400" : "text-blue-400"}`}
+                      >
                         ${ticker}
                       </span>
                       <span className="text-[10px] text-gray-500 font-bold">
