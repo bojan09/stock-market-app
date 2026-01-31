@@ -3,23 +3,16 @@
 import { useEffect, useState } from "react";
 import {
   getEconomicCalendar,
-  getMockEconomicCalendar, // New import
+  getMockEconomicCalendar,
   EconomicEvent,
 } from "@/lib/actions/market.actions";
-import {
-  Globe,
-  AlertTriangle,
-  CalendarDays,
-  Filter,
-  Info,
-  FlaskConical,
-} from "lucide-react";
+import { CalendarDays, Filter, Info, FlaskConical } from "lucide-react";
 
 export default function EconomicCalendar() {
   const [events, setEvents] = useState<EconomicEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [highImpactOnly, setHighImpactOnly] = useState(true);
-  const [isDemoMode, setIsDemoMode] = useState(false); // New state
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const loadData = async (demo: boolean) => {
     setLoading(true);

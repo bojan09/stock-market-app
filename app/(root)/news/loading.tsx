@@ -1,4 +1,3 @@
-import { Newspaper } from "lucide-react";
 import NewsSkeleton from "@/components/shared/NewsSkeleton";
 
 export default function Loading() {

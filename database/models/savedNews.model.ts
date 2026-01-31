@@ -2,7 +2,7 @@ import { Schema, model, models } from "mongoose";
 
 const SavedNewsSchema = new Schema({
   userId: { type: String, required: true, index: true },
-  articleId: { type: String, required: true }, // From Finnhub
+  articleId: { type: String, required: true },
   headline: { type: String, required: true },
   summary: { type: String },
   url: { type: String, required: true },

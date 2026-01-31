@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import SearchCommand from "@/components/SearchCommand";
 import { cn } from "@/lib/utils";
 
-// Updated prop from userEmail to userId to match Screenshot 6
 interface NavItemsProps {
   userId: string;
 }
@@ -17,14 +16,12 @@ const NavItems = ({ userId }: NavItemsProps) => {
   return (
     <ul className="flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium items-center">
       {NAV_ITEMS.map(({ href, label }) => {
-        // Exact match check to prevent "/" from highlighting everything
         const isActive =
           pathname === href || (href !== "/" && pathname.startsWith(href));
 
         if (href === "/search")
           return (
             <li key="search-trigger">
-              {/* Corrected: passing userId instead of userEmail to fix Screenshot 6 */}
               <SearchCommand
                 renderAs="text"
                 label={label}

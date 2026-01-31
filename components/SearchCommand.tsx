@@ -32,7 +32,7 @@ type StockWithWatchlistStatus = {
 interface SearchCommandProps {
   renderAs?: "button" | "text";
   label?: string;
-  userId: string; // Changed from userEmail
+  userId: string;
   className?: string;
 }
 

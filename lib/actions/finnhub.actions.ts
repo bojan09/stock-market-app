@@ -4,7 +4,6 @@ import { getDateRange, validateArticle, formatArticle } from "@/lib/utils";
 import { POPULAR_STOCK_SYMBOLS } from "@/lib/constants";
 import { cache } from "react";
 
-// --- START: Added Interfaces to fix Screenshot 4 Errors ---
 interface FinnhubProfile {
   name?: string;
   ticker?: string;
@@ -31,7 +30,6 @@ interface FinnhubQuote {
   d: number; // Change
   dp: number; // Percent change
 }
-// --- END: Added Interfaces ---
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const NEXT_PUBLIC_FINNHUB_API_KEY =
@@ -94,7 +92,7 @@ export async function getNews(
       );
     }
 
-    // 2. Fetch General News (To prevent the "Only 6" and "Yahoo-only" issue)
+    // 2. Fetch General News
     const generalUrl = `${FINNHUB_BASE_URL}/news?category=general&token=${token}`;
     const general = await fetchJSON<RawNewsArticle[]>(generalUrl, 300);
     if (general) {
@@ -103,7 +101,7 @@ export async function getNews(
       });
     }
 
-    // 3. STRICT DEDUPLICATION (Fixes the "Duplicate Key" error)
+    // 3. STRICT DEDUPLICATION
     const uniqueMap = new Map<string, MarketNewsArticle>();
 
     // Sort by date first so we keep the freshest version of a duplicate

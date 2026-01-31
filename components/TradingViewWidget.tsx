@@ -39,7 +39,7 @@ const TradingViewWidget = ({
       <div
         className={cn(
           "tradingview-widget-container rounded-2xl overflow-hidden border border-white/5 bg-[#16191F]",
-          "custom-sidebar-scrollbar", // Applying your custom scrollbar look
+          "custom-sidebar-scrollbar",
           className,
         )}
         ref={containerRef}

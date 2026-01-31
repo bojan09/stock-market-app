@@ -7,7 +7,7 @@ interface WatchlistButtonProps {
   symbol: string;
   company: string;
   isInWatchlist: boolean;
-  userId: string; // Updated from userEmail to fix TS error in Screenshot 3
+  userId: string;
   showTrashIcon?: boolean;
   type?: "button" | "icon";
   onWatchlistChange?: (symbol: string, isAdded: boolean) => void;

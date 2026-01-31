@@ -23,11 +23,10 @@ export async function getWatchlistLiveQuotes(symbols: string[]) {
           );
           const result = await res.json();
 
-          // FINNHUB BUG FIX: Fallback for SPY/HIMS if 'c' is 0 or missing
+          // FINNHUB BUG FIX: Fallback for SPY if 'c' is 0 or missing
           if (!result.c || result.c === 0) {
             const fallbacks: Record<string, any> = {
               SPY: { c: 585.42, d: 1.25, dp: 0.21 },
-              HIMS: { c: 22.15, d: -0.32, dp: -1.42 },
             };
 
             const mock = fallbacks[symbol] || { c: 0, d: 0, dp: 0 };

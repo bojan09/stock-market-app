@@ -2,7 +2,6 @@ import { auth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistNews } from "@/lib/actions/news.actions";
-import { getAiMarketSummary } from "@/lib/actions/ai.actions";
 import { getSentimentDashboardData } from "@/lib/actions/sentiment.actions";
 import { getEconomicCalendar } from "@/lib/actions/market.actions";
 import {
@@ -136,7 +135,6 @@ export default async function NewsPage({
     .sort((a, b) => b[1] - a[1])
     .slice(0, 4);
 
-  // Extracted Sidebar Content to avoid duplication
   const SidebarContent = () => (
     <div className="space-y-8">
       {/* 1. Market Sentiment Widget */}

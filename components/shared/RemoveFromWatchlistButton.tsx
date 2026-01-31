@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 interface RemoveButtonProps {
   symbol: string;
-  userId: string; // Corrected prop to match Screenshot 9
+  userId: string;
 }
 
 export default function RemoveFromWatchlistButton({
