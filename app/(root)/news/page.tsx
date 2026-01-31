@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistNews } from "@/lib/actions/news.actions";
 import { getAiMarketSummary } from "@/lib/actions/ai.actions";
+import { getSentimentDashboardData } from "@/lib/actions/sentiment.actions";
+import { getEconomicCalendar } from "@/lib/actions/market.actions";
 import {
   getSavedNewsIds,
   getSavedArticles,
@@ -10,12 +12,16 @@ import {
 import {
   Newspaper,
   Bookmark,
-  Tag,
   Search,
   TrendingUp,
   TrendingDown,
   BarChart3,
-  Building2,
+  Zap,
+  ChevronRight,
+  PieChart,
+  Activity,
+  CalendarDays,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -72,10 +78,15 @@ export default async function NewsPage({
   } = await searchParams;
   const isSavedFilter = filter === "saved";
 
-  const [newsData, savedIds] = await Promise.all([
-    getWatchlistNews(userId),
-    getSavedNewsIds(userId),
-  ]);
+  const [newsData, savedIds, sentimentHubData, ecoCalendar] = await Promise.all(
+    [
+      getWatchlistNews(userId),
+      getSavedNewsIds(userId),
+      getSentimentDashboardData(),
+      getEconomicCalendar(),
+    ],
+  );
+
   const { articles: liveArticles, isGeneral, success } = newsData;
   if (!success)
     return (
@@ -84,7 +95,6 @@ export default async function NewsPage({
       </div>
     );
 
-  // Use saved articles if the filter is active
   let articles = isSavedFilter ? await getSavedArticles(userId) : liveArticles;
 
   if (selectedCategory)
@@ -102,39 +112,6 @@ export default async function NewsPage({
     sortBy === "oldest" ? a.datetime - b.datetime : b.datetime - a.datetime,
   );
 
-  // Heatmap Stats
-  const tickerRegex = /\b[A-Z]{2,5}\b/g;
-  const tickerStats: Record<string, { count: number; score: number }> = {};
-  articles.forEach((a: any) => {
-    const matches = a.headline.match(tickerRegex);
-    if (matches) {
-      const sentiment = getSentimentServer(a.headline);
-      const points =
-        sentiment === "bullish" ? 1 : sentiment === "bearish" ? -1 : 0;
-      matches.forEach((t: string) => {
-        if (!["NEWS", "USA", "FED", "CEO", "AI", "USD", "ETF"].includes(t)) {
-          if (!tickerStats[t]) tickerStats[t] = { count: 0, score: 0 };
-          tickerStats[t].count += 1;
-          tickerStats[t].score += points;
-        }
-      });
-    }
-  });
-
-  const trendingTickers = Object.entries(tickerStats)
-    .sort(([, a], [, b]) => b.count - a.count)
-    .slice(0, 8)
-    .map(([ticker, stats]) => ({
-      ticker,
-      count: stats.count,
-      sentiment:
-        stats.score > 0 ? "bullish" : stats.score < 0 ? "bearish" : "neutral",
-    }));
-
-  const categories = Array.from(
-    new Set(articles.map((a: any) => a.category).filter(Boolean)),
-  );
-  const aiInsight = await getAiMarketSummary(liveArticles);
   const total = articles.length;
   const bullishCount = articles.filter(
     (a) => getSentimentServer(a.headline) === "bullish",
@@ -143,9 +120,66 @@ export default async function NewsPage({
     (a) => getSentimentServer(a.headline) === "bearish",
   ).length;
 
+  const sourceMap: Record<string, number> = {};
+  articles.forEach((a: any) => {
+    sourceMap[a.source] = (sourceMap[a.source] || 0) + 1;
+  });
+  const topSources = Object.entries(sourceMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
   return (
     <div className="min-h-screen bg-[#0F1115] text-white p-4 md:p-8 pb-24 relative">
       <div className="max-w-[1600px] mx-auto">
+        {!isSavedFilter && sentimentHubData && (
+          <Link href="/sentiment" className="group block mb-10">
+            <div className="bg-[#16191F] border border-white/5 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-blue-500/30 transition-all">
+              <div className="flex items-center gap-6">
+                <div className="p-4 bg-blue-600/10 rounded-2xl text-blue-500 group-hover:scale-110 transition-transform">
+                  <Zap size={24} fill="currentColor" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-gray-400 uppercase tracking-tighter flex items-center gap-2">
+                    Market Sentiment Hub <ChevronRight size={14} />
+                  </h2>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black text-white">
+                      {Math.round(sentimentHubData.marketSentiment)}%
+                    </span>
+                    <span className="text-emerald-500 font-bold text-xs">
+                      BULLISH BIAS
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 overflow-hidden">
+                {sentimentHubData.leaderboard.slice(0, 3).map((item: any) => (
+                  <div
+                    key={item.symbol}
+                    className="bg-[#0F1115] px-4 py-2 rounded-xl border border-white/5 flex items-center gap-3"
+                  >
+                    <span className="text-[10px] font-black text-blue-400">
+                      ${item.symbol}
+                    </span>
+                    <span
+                      className={
+                        item.score >= 0 ? "text-emerald-500" : "text-rose-500"
+                      }
+                    >
+                      {item.score >= 0 ? (
+                        <TrendingUp size={12} />
+                      ) : (
+                        <TrendingDown size={12} />
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Link>
+        )}
+
         <header className="mb-10 space-y-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-6">
@@ -188,38 +222,6 @@ export default async function NewsPage({
                 </Suspense>
               </div>
             </div>
-            {aiInsight?.score !== undefined && (
-              <div className="bg-[#16191F] border border-white/5 p-4 rounded-2xl min-w-[280px]">
-                <div className="flex justify-between text-[10px] font-black uppercase mb-2">
-                  <span className="text-rose-500">Bearish</span>
-                  <span className="text-emerald-500">Bullish</span>
-                </div>
-                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-1000 ${aiInsight.score > 50 ? "bg-emerald-500" : "bg-rose-500"}`}
-                    style={{ width: `${aiInsight.score}%` }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-            <Tag size={14} className="text-gray-500 shrink-0" />
-            <Link
-              href="/news"
-              className={`px-4 py-1.5 rounded-full text-[11px] font-bold border transition-all ${!selectedCategory ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
-            >
-              All Topics
-            </Link>
-            {categories.map((cat: any) => (
-              <Link
-                key={cat}
-                href={`/news?category=${cat}`}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap capitalize transition-all ${selectedCategory === cat ? "bg-white text-black" : "border-white/10 text-gray-400 hover:border-white/30"}`}
-              >
-                {cat}
-              </Link>
-            ))}
           </div>
         </header>
 
@@ -236,7 +238,7 @@ export default async function NewsPage({
               </div>
             ) : (
               <InfiniteNewsList
-                key={isSavedFilter ? "saved" : "all"} // Key ensures state reset
+                key={isSavedFilter ? "saved" : "all"}
                 initialArticles={articles}
                 userId={userId}
                 savedIds={savedIds}
@@ -244,67 +246,156 @@ export default async function NewsPage({
             )}
           </div>
 
-          <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8">
-              <div className="flex items-center gap-3 mb-6">
-                <BarChart3 className="text-blue-500" size={20} />
-                <h3 className="font-bold text-sm tracking-tight">
-                  Market Sentiment
-                </h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between text-xs font-bold text-emerald-500 uppercase">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={14} /> Bullish
-                  </div>
-                  <span>{bullishCount}</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500"
-                    style={{ width: `${(bullishCount / (total || 1)) * 100}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown size={14} /> Bearish
-                  </div>
-                  <span>{bearishCount}</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-rose-500"
-                    style={{ width: `${(bearishCount / (total || 1)) * 100}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-10 pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <Building2 className="text-blue-400" size={18} />
+          <aside className="lg:col-span-3">
+            {/* Scrollable Sticky Container */}
+            <div
+              className="bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8 
+               max-h-[calc(100vh-4rem)] overflow-y-auto 
+               space-y-8 custom-sidebar-scrollbar"
+            >
+              {/* 1. Market Sentiment Widget */}
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <BarChart3 className="text-blue-500" size={20} />
                   <h3 className="font-bold text-sm tracking-tight">
-                    Trending Assets
+                    Market Sentiment
                   </h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {trendingTickers.map(({ ticker, count, sentiment }) => (
-                    <Link
-                      key={ticker}
-                      href={`/news?q=${ticker}`}
-                      className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-all group ${sentiment === "bullish" ? "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40" : sentiment === "bearish" ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/40" : "bg-white/5 border-white/5 hover:border-white/20"}`}
-                    >
-                      <span
-                        className={`text-[11px] font-black ${sentiment === "bullish" ? "text-emerald-400" : sentiment === "bearish" ? "text-rose-400" : "text-blue-400"}`}
+                <div className="space-y-4">
+                  <div className="flex justify-between text-xs font-bold text-emerald-500 uppercase">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp size={14} /> Bullish
+                    </div>
+                    <span>{bullishCount}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500"
+                      style={{
+                        width: `${(bullishCount / (total || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
+                    <div className="flex items-center gap-2">
+                      <TrendingDown size={14} /> Bearish
+                    </div>
+                    <span>{bearishCount}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-rose-500"
+                      style={{
+                        width: `${(bearishCount / (total || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* 2. AI Signal Strength */}
+              <section className="pt-6 border-t border-white/5">
+                <div className="flex items-center gap-3 mb-4">
+                  <Activity className="text-yellow-500" size={18} />
+                  <h3 className="font-bold text-sm tracking-tight">
+                    Signal Strength
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {sentimentHubData?.leaderboard
+                    .slice(0, 5)
+                    .map((item: any) => (
+                      <div
+                        key={item.symbol}
+                        className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5"
                       >
-                        ${ticker}
+                        <span className="text-xs font-black text-white">
+                          ${item.symbol}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${item.score >= 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
+                        >
+                          {item.score >= 0 ? "+" : ""}
+                          {Math.round(item.score)}%
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </section>
+
+              {/* 3. Economic Calendar (Macro Events) */}
+              <section className="pt-6 border-t border-white/5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <CalendarDays className="text-emerald-500" size={18} />
+                    <h3 className="font-bold text-sm tracking-tight">
+                      Macro Events
+                    </h3>
+                  </div>
+                  <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">
+                    High
+                  </span>
+                </div>
+                <div className="space-y-4">
+                  {ecoCalendar.length > 0 ? (
+                    ecoCalendar.map((event, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
+                          <span>
+                            {new Date(event.time).toLocaleDateString([], {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Globe size={10} /> {event.country}
+                          </div>
+                        </div>
+                        <p className="text-[11px] font-semibold text-gray-200 leading-snug line-clamp-2">
+                          {event.event}
+                        </p>
+                        {event.forecast && (
+                          <p className="text-[10px] text-gray-500">
+                            Est:{" "}
+                            <span className="text-gray-300">
+                              {event.forecast}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[10px] text-gray-600 italic">
+                      No major events this week.
+                    </p>
+                  )}
+                </div>
+              </section>
+
+              {/* 4. Top Sources Breakdown */}
+              <section className="pt-6 border-t border-white/5">
+                <div className="flex items-center gap-3 mb-4">
+                  <PieChart className="text-blue-400" size={18} />
+                  <h3 className="font-bold text-sm tracking-tight">
+                    Intel Sources
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {topSources.map(([source, count]) => (
+                    <div
+                      key={source}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-[11px] text-gray-400 font-medium">
+                        {source}
                       </span>
-                      <span className="text-[10px] text-gray-500 font-bold">
-                        {count}
+                      <span className="text-[11px] text-white font-bold">
+                        {Math.round((count / articles.length) * 100)}%
                       </span>
-                    </Link>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </section>
             </div>
           </aside>
         </div>

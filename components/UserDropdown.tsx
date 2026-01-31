@@ -11,7 +11,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut, Search, LayoutDashboard, ListOrdered } from "lucide-react";
+import {
+  LogOut,
+  Search,
+  LayoutDashboard,
+  ListOrdered,
+  Newspaper,
+} from "lucide-react";
 import { signOut } from "@/lib/actions/auth.actions";
 import SearchCommand from "./SearchCommand";
 
@@ -21,7 +27,7 @@ interface UserDropdownProps {
     email?: string | null;
     image?: string | null;
   };
-  userId: string; // Updated from userEmail to userId to match your latest actions
+  userId: string;
 }
 
 const UserDropdown = ({ user, userId }: UserDropdownProps) => {
@@ -77,13 +83,21 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
             Dashboard
           </DropdownMenuItem>
 
-          {/* NEW: Watchlist Item for Mobile */}
           <DropdownMenuItem
             className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
             onClick={() => router.push("/watchlist")}
           >
             <ListOrdered className="h-4 w-4 mr-3 text-gray-500" />
             Watchlist
+          </DropdownMenuItem>
+
+          {/* NEW: News Item for Mobile */}
+          <DropdownMenuItem
+            className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
+            onClick={() => router.push("/news")}
+          >
+            <Newspaper className="h-4 w-4 mr-3 text-gray-500" />
+            Market News
           </DropdownMenuItem>
 
           <DropdownMenuItem
