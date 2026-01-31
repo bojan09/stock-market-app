@@ -22,6 +22,7 @@ import {
   Activity,
   CalendarDays,
   Globe,
+  LayoutGrid,
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -30,6 +31,13 @@ import SearchInput from "@/components/shared/SearchInput";
 import SortDropdown from "@/components/shared/SortDropdown";
 import BackToTop from "@/components/shared/BackToTop";
 import InfiniteNewsList from "@/components/shared/InfiniteNewsList";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const getSentimentServer = (headline: string) => {
   const h = headline.toLowerCase();
@@ -128,6 +136,143 @@ export default async function NewsPage({
     .sort((a, b) => b[1] - a[1])
     .slice(0, 4);
 
+  // Extracted Sidebar Content to avoid duplication
+  const SidebarContent = () => (
+    <div className="space-y-8">
+      {/* 1. Market Sentiment Widget */}
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <BarChart3 className="text-blue-500" size={20} />
+          <h3 className="font-bold text-sm tracking-tight text-white">
+            Market Sentiment
+          </h3>
+        </div>
+        <div className="space-y-4">
+          <div className="flex justify-between text-xs font-bold text-emerald-500 uppercase">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={14} /> Bullish
+            </div>
+            <span>{bullishCount}</span>
+          </div>
+          <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500"
+              style={{
+                width: `${(bullishCount / (total || 1)) * 100}%`,
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
+            <div className="flex items-center gap-2">
+              <TrendingDown size={14} /> Bearish
+            </div>
+            <span>{bearishCount}</span>
+          </div>
+          <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-rose-500"
+              style={{
+                width: `${(bearishCount / (total || 1)) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 2. AI Signal Strength */}
+      <section className="pt-6 border-t border-white/5">
+        <div className="flex items-center gap-3 mb-4">
+          <Activity className="text-yellow-500" size={18} />
+          <h3 className="font-bold text-sm tracking-tight text-white">
+            Signal Strength
+          </h3>
+        </div>
+        <div className="space-y-2">
+          {sentimentHubData?.leaderboard?.slice(0, 5).map((item: any) => (
+            <div
+              key={item.symbol}
+              className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5"
+            >
+              <span className="text-xs font-black text-white">
+                ${item.symbol}
+              </span>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                  item.score >= 0
+                    ? "bg-emerald-500/10 text-emerald-500"
+                    : "bg-rose-500/10 text-rose-500"
+                }`}
+              >
+                {item.score >= 0 ? "+" : ""}
+                {Math.round(item.score)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Economic Calendar */}
+      <section className="pt-6 border-t border-white/5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <CalendarDays className="text-emerald-500" size={18} />
+            <h3 className="font-bold text-sm tracking-tight text-white">
+              Macro Events
+            </h3>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {ecoCalendar.length > 0 ? (
+            ecoCalendar.map((event, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
+                  <span>
+                    {new Date(event.time).toLocaleDateString([], {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Globe size={10} /> {event.country}
+                  </div>
+                </div>
+                <p className="text-[11px] font-semibold text-gray-200 leading-snug line-clamp-2">
+                  {event.event}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] text-gray-600 italic">
+              No major events this week.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* 4. Top Sources Breakdown */}
+      <section className="pt-6 border-t border-white/5">
+        <div className="flex items-center gap-3 mb-4">
+          <PieChart className="text-blue-400" size={18} />
+          <h3 className="font-bold text-sm tracking-tight text-white">
+            Intel Sources
+          </h3>
+        </div>
+        <div className="space-y-3">
+          {topSources.map(([source, count]) => (
+            <div key={source} className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-400 font-medium">
+                {source}
+              </span>
+              <span className="text-[11px] text-white font-bold">
+                {Math.round((count / articles.length) * 100)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#0F1115] text-white p-4 md:p-8 pb-24 relative">
       <div className="max-w-[1600px] mx-auto">
@@ -191,13 +336,21 @@ export default async function NewsPage({
                 <div className="flex items-center gap-1 bg-[#16191F] p-1 rounded-xl border border-white/5">
                   <Link
                     href="/news"
-                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                      !isSavedFilter
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
                   >
                     All News
                   </Link>
                   <Link
                     href="/news?filter=saved"
-                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
+                      isSavedFilter
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
                   >
                     <Bookmark
                       size={14}
@@ -247,155 +400,34 @@ export default async function NewsPage({
           </div>
 
           <aside className="lg:col-span-3">
-            {/* Scrollable Sticky Container */}
+            {/* Desktop Sidebar */}
             <div
-              className="bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8 
+              className="hidden lg:block bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8 
                max-h-[calc(100vh-4rem)] overflow-y-auto 
-               space-y-8 custom-sidebar-scrollbar"
+               custom-sidebar-scrollbar"
             >
-              {/* 1. Market Sentiment Widget */}
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <BarChart3 className="text-blue-500" size={20} />
-                  <h3 className="font-bold text-sm tracking-tight">
-                    Market Sentiment
-                  </h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-xs font-bold text-emerald-500 uppercase">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp size={14} /> Bullish
-                    </div>
-                    <span>{bullishCount}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500"
-                      style={{
-                        width: `${(bullishCount / (total || 1)) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
-                    <div className="flex items-center gap-2">
-                      <TrendingDown size={14} /> Bearish
-                    </div>
-                    <span>{bearishCount}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-rose-500"
-                      style={{
-                        width: `${(bearishCount / (total || 1)) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </section>
+              <SidebarContent />
+            </div>
 
-              {/* 2. AI Signal Strength */}
-              <section className="pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <Activity className="text-yellow-500" size={18} />
-                  <h3 className="font-bold text-sm tracking-tight">
-                    Signal Strength
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {sentimentHubData?.leaderboard
-                    .slice(0, 5)
-                    .map((item: any) => (
-                      <div
-                        key={item.symbol}
-                        className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5"
-                      >
-                        <span className="text-xs font-black text-white">
-                          ${item.symbol}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${item.score >= 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
-                        >
-                          {item.score >= 0 ? "+" : ""}
-                          {Math.round(item.score)}%
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </section>
-
-              {/* 3. Economic Calendar (Macro Events) */}
-              <section className="pt-6 border-t border-white/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <CalendarDays className="text-emerald-500" size={18} />
-                    <h3 className="font-bold text-sm tracking-tight">
-                      Macro Events
-                    </h3>
-                  </div>
-                  <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">
-                    High
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {ecoCalendar.length > 0 ? (
-                    ecoCalendar.map((event, i) => (
-                      <div key={i} className="space-y-1">
-                        <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
-                          <span>
-                            {new Date(event.time).toLocaleDateString([], {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <Globe size={10} /> {event.country}
-                          </div>
-                        </div>
-                        <p className="text-[11px] font-semibold text-gray-200 leading-snug line-clamp-2">
-                          {event.event}
-                        </p>
-                        {event.forecast && (
-                          <p className="text-[10px] text-gray-500">
-                            Est:{" "}
-                            <span className="text-gray-300">
-                              {event.forecast}
-                            </span>
-                          </p>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-[10px] text-gray-600 italic">
-                      No major events this week.
-                    </p>
-                  )}
-                </div>
-              </section>
-
-              {/* 4. Top Sources Breakdown */}
-              <section className="pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <PieChart className="text-blue-400" size={18} />
-                  <h3 className="font-bold text-sm tracking-tight">
-                    Intel Sources
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  {topSources.map(([source, count]) => (
-                    <div
-                      key={source}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-[11px] text-gray-400 font-medium">
-                        {source}
-                      </span>
-                      <span className="text-[11px] text-white font-bold">
-                        {Math.round((count / articles.length) * 100)}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
+            {/* Mobile Sidebar Trigger (Floating Button) */}
+            <div className="lg:hidden fixed bottom-6 left-6 z-50">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 transition-all active:scale-95 border border-white/10">
+                    <LayoutGrid size={20} />
+                    <span className="text-xs font-bold pr-1">Market Intel</span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="bg-[#16191F] border-l-white/5 text-white w-[300px] p-6 overflow-y-auto custom-sidebar-scrollbar"
+                >
+                  <VisuallyHidden>
+                    <SheetTitle>Market Intelligence</SheetTitle>
+                  </VisuallyHidden>
+                  <SidebarContent />
+                </SheetContent>
+              </Sheet>
             </div>
           </aside>
         </div>
