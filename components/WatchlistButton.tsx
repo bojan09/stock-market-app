@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { toggleWatchlist } from "@/lib/actions/watchlist.actions";
 import { toast } from "sonner";
+import { Plus, Check, Trash2, Loader2, Star } from "lucide-react";
 
 interface WatchlistButtonProps {
   symbol: string;
@@ -17,10 +18,10 @@ const WatchlistButton = ({
   symbol,
   company,
   isInWatchlist,
-  showTrashIcon = false,
+  showTrashIcon = true, // Default to true for better UX
   type = "button",
   onWatchlistChange,
-  userId, // Updated variable name
+  userId,
 }: WatchlistButtonProps) => {
   const [added, setAdded] = useState<boolean>(!!isInWatchlist);
   const [isPending, setIsPending] = useState(false);
@@ -29,18 +30,11 @@ const WatchlistButton = ({
     setAdded(!!isInWatchlist);
   }, [isInWatchlist]);
 
-  const label = useMemo(() => {
-    if (type === "icon") return "";
-    return added ? "Remove from Watchlist" : "Add to Watchlist";
-  }, [added, type]);
-
   const handleClick = async () => {
-    // Check for userId instead of email
     if (!userId) {
       toast.error("Please sign in to manage your watchlist");
       return;
     }
-
     if (isPending) return;
 
     const nextState = !added;
@@ -48,9 +42,7 @@ const WatchlistButton = ({
     setIsPending(true);
 
     try {
-      // Passing userId to the action
       const result = await toggleWatchlist(userId, symbol, company);
-
       if (result.success) {
         toast.success(
           nextState
@@ -64,67 +56,64 @@ const WatchlistButton = ({
       }
     } catch (error) {
       setAdded(!nextState);
-      toast.error("Something went wrong. Please try again.");
-      console.error("Watchlist error:", error);
+      toast.error("Something went wrong");
     } finally {
       setIsPending(false);
     }
   };
 
+  // ICON TYPE UI
   if (type === "icon") {
     return (
       <button
-        title={added ? `Remove ${symbol}` : `Add ${symbol}`}
-        aria-label={added ? `Remove ${symbol}` : `Add ${symbol}`}
-        className={`watchlist-icon-btn ${added ? "watchlist-icon-added" : ""} ${isPending ? "opacity-50" : ""}`}
         onClick={handleClick}
         disabled={isPending}
+        className={`p-2 rounded-full transition-all active:scale-90 ${
+          added
+            ? "text-yellow-400 bg-yellow-400/10"
+            : "text-gray-500 hover:text-white bg-white/5 hover:bg-white/10"
+        }`}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill={added ? "#FACC15" : "none"}
-          stroke="#FACC15"
-          strokeWidth="1.5"
-          className={`w-6 h-6 ${isPending ? "animate-pulse" : ""}`}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.385a.563.563 0 00-.182-.557L3.04 10.385a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345l2.125-5.111z"
-          />
-        </svg>
+        {isPending ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <Star className={`w-5 h-5 ${added ? "fill-yellow-400" : ""}`} />
+        )}
       </button>
     );
   }
 
+  // BUTTON TYPE UI (Standard Best Practice)
   return (
     <button
-      className={`watchlist-btn flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all ${
-        added
-          ? "bg-red-500/10 text-red-500 border border-red-500/20"
-          : "bg-blue-600 text-white"
-      } ${isPending ? "opacity-70 cursor-not-allowed" : ""}`}
       onClick={handleClick}
       disabled={isPending}
+      className={`group relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-w-[140px] ${
+        added
+          ? "bg-white/5 text-gray-400 border border-white/10 hover:bg-red-500 hover:text-white hover:border-red-500"
+          : "bg-blue-600 text-white border border-blue-500 hover:bg-blue-700 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+      } ${isPending ? "opacity-70 cursor-not-allowed" : ""}`}
     >
-      {showTrashIcon && added && (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-          />
-        </svg>
+      {isPending ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : added ? (
+        <>
+          {/* Default state when followed */}
+          <Check className="w-3.5 h-3.5 group-hover:hidden" />
+          <span className="group-hover:hidden">Following</span>
+
+          {/* Hover state (Prompt to remove) */}
+          <Trash2 className="w-3.5 h-3.5 hidden group-hover:block animate-in zoom-in-75" />
+          <span className="hidden group-hover:block animate-in slide-in-from-right-2">
+            Remove {symbol}
+          </span>
+        </>
+      ) : (
+        <>
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add to Watchlist</span>
+        </>
       )}
-      <span>{isPending ? "Updating..." : label}</span>
     </button>
   );
 };
