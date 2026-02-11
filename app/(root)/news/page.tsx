@@ -38,6 +38,32 @@ import {
 } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
+/**
+ * SEO: Dynamic Metadata Generation
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string; q?: string }>;
+}) {
+  const { filter, q } = await searchParams;
+  const isSaved = filter === "saved";
+
+  return {
+    title: isSaved
+      ? "Saved Intelligence"
+      : q
+        ? `Results for "${q}"`
+        : "Market Pulse",
+    description: isSaved
+      ? "Your curated collection of important financial news and stock alerts."
+      : "Real-time stock market news and sentiment analysis for your personal watchlist.",
+    alternates: {
+      canonical: "/news",
+    },
+  };
+}
+
 const getSentimentServer = (headline: string) => {
   const h = headline.toLowerCase();
   if (
@@ -119,6 +145,21 @@ export default async function NewsPage({
     sortBy === "oldest" ? a.datetime - b.datetime : b.datetime - a.datetime,
   );
 
+  // SEO: JSON-LD Schema for News List
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: articles.length,
+    itemListElement: articles
+      .slice(0, 10)
+      .map((article: any, index: number) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: article.url || `https://signalist.com/news/${article.id}`,
+        name: article.headline,
+      })),
+  };
+
   const total = articles.length;
   const bullishCount = articles.filter(
     (a) => getSentimentServer(a.headline) === "bullish",
@@ -137,7 +178,6 @@ export default async function NewsPage({
 
   const SidebarContent = () => (
     <div className="space-y-8">
-      {/* 1. Market Sentiment Widget */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <BarChart3 className="text-blue-500" size={20} />
@@ -155,9 +195,7 @@ export default async function NewsPage({
           <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500"
-              style={{
-                width: `${(bullishCount / (total || 1)) * 100}%`,
-              }}
+              style={{ width: `${(bullishCount / (total || 1)) * 100}%` }}
             />
           </div>
           <div className="flex justify-between text-xs font-bold text-rose-500 uppercase">
@@ -169,15 +207,12 @@ export default async function NewsPage({
           <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-rose-500"
-              style={{
-                width: `${(bearishCount / (total || 1)) * 100}%`,
-              }}
+              style={{ width: `${(bearishCount / (total || 1)) * 100}%` }}
             />
           </div>
         </div>
       </section>
 
-      {/* 2. AI Signal Strength */}
       <section className="pt-6 border-t border-white/5">
         <div className="flex items-center gap-3 mb-4">
           <Activity className="text-yellow-500" size={18} />
@@ -195,11 +230,7 @@ export default async function NewsPage({
                 ${item.symbol}
               </span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                  item.score >= 0
-                    ? "bg-emerald-500/10 text-emerald-500"
-                    : "bg-rose-500/10 text-rose-500"
-                }`}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${item.score >= 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
               >
                 {item.score >= 0 ? "+" : ""}
                 {Math.round(item.score)}%
@@ -209,7 +240,6 @@ export default async function NewsPage({
         </div>
       </section>
 
-      {/* 3. Economic Calendar */}
       <section className="pt-6 border-t border-white/5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -247,7 +277,6 @@ export default async function NewsPage({
         </div>
       </section>
 
-      {/* 4. Top Sources Breakdown */}
       <section className="pt-6 border-t border-white/5">
         <div className="flex items-center gap-3 mb-4">
           <PieChart className="text-blue-400" size={18} />
@@ -273,6 +302,12 @@ export default async function NewsPage({
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white p-4 md:p-8 pb-24 relative">
+      {/* SEO: Inject JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <div className="max-w-[1600px] mx-auto">
         {!isSavedFilter && sentimentHubData && (
           <Link href="/sentiment" className="group block mb-10">
@@ -334,21 +369,13 @@ export default async function NewsPage({
                 <div className="flex items-center gap-1 bg-[#16191F] p-1 rounded-xl border border-white/5">
                   <Link
                     href="/news"
-                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                      !isSavedFilter
-                        ? "bg-blue-600 text-white shadow-lg"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
                   >
                     All News
                   </Link>
                   <Link
                     href="/news?filter=saved"
-                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
-                      isSavedFilter
-                        ? "bg-blue-600 text-white shadow-lg"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${isSavedFilter ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
                   >
                     <Bookmark
                       size={14}
@@ -398,16 +425,10 @@ export default async function NewsPage({
           </div>
 
           <aside className="lg:col-span-3">
-            {/* Desktop Sidebar */}
-            <div
-              className="hidden lg:block bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8 
-               max-h-[calc(100vh-4rem)] overflow-y-auto 
-               custom-sidebar-scrollbar"
-            >
+            <div className="hidden lg:block bg-[#16191F] border border-white/5 rounded-2xl p-6 sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto custom-sidebar-scrollbar">
               <SidebarContent />
             </div>
 
-            {/* Mobile Sidebar Trigger (Floating Button) */}
             <div className="lg:hidden fixed bottom-6 left-6 z-50">
               <Sheet>
                 <SheetTrigger asChild>
