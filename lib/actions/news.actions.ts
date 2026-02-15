@@ -127,3 +127,27 @@ export async function getAnalystRecommendations(symbol: string) {
     return null;
   }
 }
+
+export async function getEarningsSurprises(symbol: string) {
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    if (!apiKey) throw new Error("Missing Finnhub API Key");
+
+    const res = await fetch(
+      `https://finnhub.io/api/v1/stock/earnings?symbol=${symbol.toUpperCase()}&token=${apiKey}`,
+      {
+        next: { revalidate: 3600 }, // Revalidate every hour
+      },
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch earnings surprises");
+
+    const data = await res.json();
+
+    // Finnhub returns an array of: { actual, estimate, period, quarter, surprise, symbol, year }
+    return data;
+  } catch (error) {
+    console.error("Earnings Surprise Action Error:", error);
+    return [];
+  }
+}

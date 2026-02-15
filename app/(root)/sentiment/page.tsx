@@ -21,7 +21,7 @@ export default async function SentimentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Market Mood Gauge */}
         <div className="bg-[#16191F] border border-white/5 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 via-yellow-500 to-emerald-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-yellow-500 to-emerald-500" />
           <h2 className="text-gray-400 font-bold mb-6 flex items-center gap-2 uppercase text-xs">
             <Zap size={14} className="text-yellow-500" /> Market Mood
           </h2>
@@ -83,7 +83,7 @@ export default async function SentimentPage() {
       </div>
 
       {/* 3. Social Buzz Placeholder */}
-      <div className="bg-gradient-to-br from-blue-600/20 to-transparent border border-blue-500/20 rounded-3xl p-10 text-center">
+      <div className="bg-liner-to-br from-blue-600/20 to-transparent border border-blue-500/20 rounded-3xl p-10 text-center">
         <h3 className="text-white font-bold text-xl mb-2">
           Ready for deeper signals?
         </h3>

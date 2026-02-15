@@ -213,6 +213,10 @@ export const CANDLE_CHART_WIDGET_CONFIG = (symbol: string) => ({
   studies: [],
   width: "100%",
   height: 600,
+  show_popup_button: true,
+  remember_last_used_tool: true,
+  user_id: "terminal_user",
+  client_id: "terminal_app",
 });
 
 export const BASELINE_WIDGET_CONFIG = (symbol: string) => ({

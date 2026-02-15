@@ -38,6 +38,7 @@
     "react-hook-form": "^7.69.0",
     "react-intersection-observer": "^10.0.2",
     "react-select-country-list": "^2.2.3",
+    "recharts": "^3.7.0",
     "select": "^1.1.2",
     "shadcn": "^3.6.2",
     "sonner": "^2.0.7",
