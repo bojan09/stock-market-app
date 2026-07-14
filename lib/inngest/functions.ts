@@ -19,6 +19,7 @@ import {
   getActiveAlertsGroupedBySymbol,
   markAlertTriggered,
 } from "@/lib/actions/alert.actions";
+import { recordPriceSnapshots } from "@/lib/actions/priceHistory.actions";
 import { getFormattedTodayDate } from "@/lib/utils";
 
 export type UserForNewsEmail = {
@@ -236,6 +237,19 @@ export const checkPriceAlerts = inngest.createFunction(
     return {
       success: true,
       message: `Checked ${symbols.length} symbol(s), triggered ${triggered.length} alert(s)`,
+    };
+  },
+);
+
+export const recordPriceHistory = inngest.createFunction(
+  { id: "record-price-history" },
+  { cron: "*/30 * * * *" },
+  async ({ step }) => {
+    const result = await step.run("record-snapshots", recordPriceSnapshots);
+
+    return {
+      success: true,
+      message: `Recorded ${result.recorded} price snapshot(s)`,
     };
   },
 );

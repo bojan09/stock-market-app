@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getStockQuote } from "@/lib/actions/finnhub.actions";
+import { getPriceHistory } from "@/lib/actions/priceHistory.actions";
 import { TrendingUp, TrendingDown, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RemoveFromWatchlistButton from "./RemoveFromWatchlistButton";
@@ -14,7 +15,10 @@ export default async function WatchlistCard({
   symbol,
   userId,
 }: WatchlistCardProps) {
-  const quote = await getStockQuote(symbol);
+  const [quote, history] = await Promise.all([
+    getStockQuote(symbol),
+    getPriceHistory(symbol, 20),
+  ]);
 
   // Fallback for missing data (e.g., ARCA:SPY error in Screenshot 4)
   if (!quote || quote.current === 0) return null;
@@ -26,13 +30,26 @@ export default async function WatchlistCard({
   const rangeProgress =
     dayRange > 0 ? ((quote.current - quote.low) / dayRange) * 100 : 0;
 
-  // Sparkline Path Generation
-  const points = [quote.open, quote.low, quote.high, quote.current];
+  // Sparkline Path Generation: use real recorded price history once we
+  // have enough points, otherwise fall back to the coarse 4-point curve
+  // from today's quote (Finnhub's free tier has no historical-candle
+  // access, so real history only exists once our own snapshot cron has
+  // been running for a while).
+  const hasRealHistory = history.length >= 3;
+  const points = hasRealHistory
+    ? history.map((h) => h.price)
+    : [quote.open, quote.low, quote.high, quote.current];
   const min = Math.min(...points);
   const max = Math.max(...points);
-  const normalize = (val: number) => 40 - ((val - min) / (max - min)) * 30;
+  const range = max - min || 1;
+  const normalize = (val: number) => 40 - ((val - min) / range) * 30;
 
-  const sparklinePath = `M 0 ${normalize(points[0])} L 20 ${normalize(points[1])} L 40 ${normalize(points[2])} L 60 ${normalize(points[3])}`;
+  const sparklinePath = points
+    .map(
+      (p, i) =>
+        `${i === 0 ? "M" : "L"} ${(i / (points.length - 1)) * 60} ${normalize(p)}`,
+    )
+    .join(" ");
 
   const lastUpdated = new Date().toLocaleTimeString([], {
     hour: "2-digit",
