@@ -2,6 +2,7 @@ import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistNews } from "@/lib/actions/news.actions";
+import { getWatchlistSymbolsById } from "@/lib/actions/watchlist.actions";
 import { getSentimentDashboardData } from "@/lib/actions/sentiment.actions";
 import { getEconomicCalendar } from "@/lib/actions/market.actions";
 import {
@@ -112,14 +113,14 @@ export default async function NewsPage({
   } = await searchParams;
   const isSavedFilter = filter === "saved";
 
-  const [newsData, savedIds, sentimentHubData, ecoCalendar] = await Promise.all(
-    [
+  const [newsData, savedIds, sentimentHubData, ecoCalendar, watchedSymbols] =
+    await Promise.all([
       getWatchlistNews(userId),
       getSavedNewsIds(userId),
       getSentimentDashboardData(),
       getEconomicCalendar(),
-    ],
-  );
+      getWatchlistSymbolsById(userId),
+    ]);
 
   const { articles: liveArticles, isGeneral, success } = newsData;
   if (!success)
@@ -421,6 +422,7 @@ export default async function NewsPage({
                 initialArticles={articles}
                 userId={userId}
                 savedIds={savedIds}
+                watchedSymbols={watchedSymbols}
               />
             )}
           </div>

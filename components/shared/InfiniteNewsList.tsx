@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Clock, ExternalLink, Newspaper, Target, ArrowUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -49,14 +50,31 @@ const findTickers = (text: string) => {
     : [];
 };
 
+const getRelatedTickers = (article: any, watchedSymbols: string[]) => {
+  const fromField = String(article.related || "")
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+  const fromText = findTickers(`${article.headline} ${article.summary || ""}`);
+
+  const combined = Array.from(new Set([...fromField, ...fromText]));
+
+  return combined
+    .map((symbol) => ({ symbol, isWatched: watchedSymbols.includes(symbol) }))
+    .sort((a, b) => Number(b.isWatched) - Number(a.isWatched))
+    .slice(0, 4);
+};
+
 export default function InfiniteNewsList({
   initialArticles,
   userId,
   savedIds,
+  watchedSymbols = [],
 }: {
   initialArticles: any[];
   userId: string;
   savedIds: string[];
+  watchedSymbols?: string[];
 }) {
   const searchParams = useSearchParams();
   const isSavedView = searchParams.get("filter") === "saved";
@@ -130,7 +148,7 @@ export default function InfiniteNewsList({
             const priceTarget =
               findPriceTarget(article.headline) ||
               findPriceTarget(article.summary || "");
-            const tickers = findTickers(article.headline);
+            const tickers = getRelatedTickers(article, watchedSymbols);
             const isBookmarked = savedIds.includes(articleId);
 
             return (
@@ -183,28 +201,36 @@ export default function InfiniteNewsList({
                   </div>
                 </div>
 
+                <div className="px-5 pt-5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase">
+                    <span className="text-indigo-400">{article.source}</span>
+                    <span>•</span>
+                    <span>{article.category || "General"}</span>
+                  </div>
+                  {tickers.length > 0 && (
+                    <div className="flex gap-1">
+                      {tickers.map(({ symbol, isWatched }) => (
+                        <Link
+                          key={symbol}
+                          href={`/stocks/${symbol.toLowerCase()}`}
+                          className={
+                            isWatched
+                              ? "bg-indigo-600 text-white px-1.5 py-0.5 rounded text-[9px] font-black hover:bg-indigo-500 transition-colors"
+                              : "bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[9px] font-black text-indigo-300 hover:border-indigo-500/40 transition-colors"
+                          }
+                        >
+                          ${symbol}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <a
                   href={article.url}
                   target="_blank"
-                  className="p-5 flex flex-col flex-1"
+                  className="px-5 pb-5 pt-3 flex flex-col flex-1"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase">
-                      <span className="text-indigo-400">{article.source}</span>
-                      <span>•</span>
-                      <span>{article.category || "General"}</span>
-                    </div>
-                    <div className="flex gap-1">
-                      {tickers.map((t) => (
-                        <span
-                          key={t}
-                          className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[9px] font-black text-indigo-300"
-                        >
-                          ${t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                   <h2 className="text-base font-bold line-clamp-2 group-hover:text-indigo-400 transition-colors">
                     {article.headline}
                   </h2>
