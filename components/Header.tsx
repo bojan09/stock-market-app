@@ -15,9 +15,10 @@ interface HeaderProps {
     email: string;
     image?: string | null;
   };
+  unreadNewsCount?: number;
 }
 
-const Header = ({ user }: HeaderProps) => {
+const Header = ({ user, unreadNewsCount = 0 }: HeaderProps) => {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -68,16 +69,23 @@ const Header = ({ user }: HeaderProps) => {
               );
             }
 
+            const isNews = item.href === "/news";
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-[13px] uppercase tracking-widest font-semibold transition-all hover:text-white",
+                  "relative text-[13px] uppercase tracking-widest font-semibold transition-all hover:text-white",
                   pathname === item.href ? "text-indigo-500" : "text-gray-500",
                 )}
               >
                 {item.label}
+                {isNews && unreadNewsCount > 0 && (
+                  <span className="absolute -top-2 -right-3 flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-indigo-600 text-white text-[9px] font-black">
+                    {unreadNewsCount > 99 ? "99+" : unreadNewsCount}
+                  </span>
+                )}
               </Link>
             );
           })}

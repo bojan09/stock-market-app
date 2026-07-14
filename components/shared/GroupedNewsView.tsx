@@ -10,12 +10,14 @@ export default function GroupedNewsView({
   savedIds,
   watchedSymbols = [],
   aiTakeaways = {},
+  readIds = [],
 }: {
   articles: any[];
   userId: string;
   savedIds: string[];
   watchedSymbols?: string[];
   aiTakeaways?: Record<string, string>;
+  readIds?: string[];
 }) {
   const groups: Record<string, any[]> = {};
 
@@ -78,6 +80,7 @@ export default function GroupedNewsView({
                   isBookmarked={isBookmarked}
                   watchedSymbols={watchedSymbols}
                   aiTakeaway={aiTakeaways[articleId]}
+                  isRead={readIds.includes(articleId)}
                 />
               );
             })}

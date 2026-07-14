@@ -11,6 +11,7 @@ import {
   getSavedNewsIds,
   getSavedArticles,
 } from "@/lib/actions/savedNews.actions";
+import { getReadArticleIds } from "@/lib/actions/readNews.actions";
 import {
   Newspaper,
   Bookmark,
@@ -119,14 +120,21 @@ export default async function NewsPage({
   const isSavedFilter = filter === "saved";
   const isGroupedView = view === "grouped";
 
-  const [newsData, savedIds, sentimentHubData, ecoCalendar, watchedSymbols] =
-    await Promise.all([
-      getWatchlistNews(userId),
-      getSavedNewsIds(userId),
-      getSentimentDashboardData(),
-      getEconomicCalendar(),
-      getWatchlistSymbolsById(userId),
-    ]);
+  const [
+    newsData,
+    savedIds,
+    sentimentHubData,
+    ecoCalendar,
+    watchedSymbols,
+    readIds,
+  ] = await Promise.all([
+    getWatchlistNews(userId),
+    getSavedNewsIds(userId),
+    getSentimentDashboardData(),
+    getEconomicCalendar(),
+    getWatchlistSymbolsById(userId),
+    getReadArticleIds(userId),
+  ]);
 
   const { articles: liveArticles, isGeneral, success } = newsData;
   if (!success)
@@ -489,6 +497,7 @@ export default async function NewsPage({
                 savedIds={savedIds}
                 watchedSymbols={watchedSymbols}
                 aiTakeaways={aiTakeaways}
+                readIds={readIds}
               />
             ) : (
               <InfiniteNewsList
@@ -498,6 +507,7 @@ export default async function NewsPage({
                 savedIds={savedIds}
                 watchedSymbols={watchedSymbols}
                 aiTakeaways={aiTakeaways}
+                readIds={readIds}
               />
             )}
           </div>

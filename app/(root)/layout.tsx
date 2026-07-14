@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { getUnreadNewsCount } from "@/lib/actions/readNews.actions";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
   const auth = await getAuth();
@@ -15,9 +16,11 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
     email: session.user.email,
   };
 
+  const unreadNewsCount = await getUnreadNewsCount(session.user.id);
+
   return (
     <main id="main-content" className="min-h-screen text-gray-400 bg-gray-900">
-      <Header user={user} />
+      <Header user={user} unreadNewsCount={unreadNewsCount} />
       <div className="w-full px-4 md:px-10 py-6">{children}</div>
     </main>
   );

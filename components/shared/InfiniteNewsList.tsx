@@ -13,12 +13,14 @@ export default function InfiniteNewsList({
   savedIds,
   watchedSymbols = [],
   aiTakeaways = {},
+  readIds = [],
 }: {
   initialArticles: any[];
   userId: string;
   savedIds: string[];
   watchedSymbols?: string[];
   aiTakeaways?: Record<string, string>;
+  readIds?: string[];
 }) {
   const searchParams = useSearchParams();
   const isSavedView = searchParams.get("filter") === "saved";
@@ -99,6 +101,7 @@ export default function InfiniteNewsList({
                 onUnbookmark={() => handleUnbookmarkLocal(articleId)}
                 watchedSymbols={watchedSymbols}
                 aiTakeaway={aiTakeaways[articleId]}
+                isRead={readIds.includes(articleId)}
               />
             );
           })}
