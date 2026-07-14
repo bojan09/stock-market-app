@@ -33,6 +33,7 @@ import SearchInput from "@/components/shared/SearchInput";
 import SortDropdown from "@/components/shared/SortDropdown";
 import BackToTop from "@/components/shared/BackToTop";
 import InfiniteNewsList from "@/components/shared/InfiniteNewsList";
+import GroupedNewsView from "@/components/shared/GroupedNewsView";
 import {
   Sheet,
   SheetContent,
@@ -100,6 +101,7 @@ export default async function NewsPage({
     category?: string;
     q?: string;
     sortBy?: string;
+    view?: string;
   }>;
 }) {
   const auth = await getAuth();
@@ -112,8 +114,10 @@ export default async function NewsPage({
     category: selectedCategory,
     q: searchQuery,
     sortBy,
+    view,
   } = await searchParams;
   const isSavedFilter = filter === "saved";
+  const isGroupedView = view === "grouped";
 
   const [newsData, savedIds, sentimentHubData, ecoCalendar, watchedSymbols] =
     await Promise.all([
@@ -431,6 +435,37 @@ export default async function NewsPage({
                 >
                   <SortDropdown defaultValue={sortBy || "newest"} />
                 </Suspense>
+                {!isSavedFilter && (
+                  <div className="flex items-center gap-1 bg-gray-800 p-1 rounded-xl border border-white/5">
+                    <Link
+                      href={{
+                        pathname: "/news",
+                        query: {
+                          ...(selectedCategory && { category: selectedCategory }),
+                          ...(searchQuery && { q: searchQuery }),
+                          ...(sortBy && { sortBy }),
+                        },
+                      }}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isGroupedView ? "bg-indigo-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
+                    >
+                      Chronological
+                    </Link>
+                    <Link
+                      href={{
+                        pathname: "/news",
+                        query: {
+                          view: "grouped",
+                          ...(selectedCategory && { category: selectedCategory }),
+                          ...(searchQuery && { q: searchQuery }),
+                          ...(sortBy && { sortBy }),
+                        },
+                      }}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${isGroupedView ? "bg-indigo-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
+                    >
+                      By Symbol
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -447,6 +482,14 @@ export default async function NewsPage({
                     : "No articles found."}
                 </p>
               </div>
+            ) : isGroupedView ? (
+              <GroupedNewsView
+                articles={articles}
+                userId={userId}
+                savedIds={savedIds}
+                watchedSymbols={watchedSymbols}
+                aiTakeaways={aiTakeaways}
+              />
             ) : (
               <InfiniteNewsList
                 key={isSavedFilter ? "saved" : "all"}
