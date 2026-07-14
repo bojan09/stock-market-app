@@ -126,7 +126,7 @@ const SignUp = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="yellow-btn w-full mt-5"
+          className="primary-btn w-full mt-5"
         >
           {isSubmitting ? "Creating Account" : "Start Your Investing Journey"}
         </Button>

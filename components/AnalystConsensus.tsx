@@ -31,7 +31,7 @@ export default function AnalystConsensus({
       ? "text-emerald-400"
       : consensus === "SELL"
         ? "text-rose-400"
-        : "text-yellow-400";
+        : "text-indigo-400";
 
   return (
     <div className="relative group bg-gray-800 rounded-2xl border border-white/5 p-6 space-y-6 shadow-2xl transition-all hover:border-white/10">
@@ -82,7 +82,7 @@ export default function AnalystConsensus({
           />
           <div
             style={{ width: `${getWidth(data.hold)}%` }}
-            className="bg-yellow-500 transition-all duration-500 hover:brightness-125"
+            className="bg-indigo-500 transition-all duration-500 hover:brightness-125"
           />
           <div
             style={{ width: `${getWidth(data.sell)}%` }}
@@ -114,7 +114,7 @@ export default function AnalystConsensus({
         <Stat
           label="Hold"
           value={data.hold}
-          color="bg-yellow-500"
+          color="bg-indigo-500"
           glow="shadow-[0_0_8px_rgba(234,179,8,0.2)]"
         />
         <Stat

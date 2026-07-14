@@ -260,7 +260,7 @@ export default async function NewsPage({
 
       <section className="pt-6 border-t border-white/5">
         <div className="flex items-center gap-3 mb-4">
-          <Activity className="text-yellow-500" size={18} />
+          <Activity className="text-indigo-500" size={18} />
           <h3 className="font-bold text-sm tracking-tight text-white">
             Signal Strength
           </h3>

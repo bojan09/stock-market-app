@@ -55,9 +55,9 @@ export default async function SentimentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Market Mood Gauge */}
         <div className="bg-gray-800 border border-gray-600/50 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-yellow-500 to-emerald-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-indigo-500 to-emerald-500" />
           <h2 className="text-gray-400 font-bold mb-6 flex items-center gap-2 uppercase text-xs">
-            <Zap size={14} className="text-yellow-500" /> Market Mood
+            <Zap size={14} className="text-indigo-500" /> Market Mood
           </h2>
           <div className="text-6xl font-black text-white mb-2">
             {Math.round(data.marketSentiment)}%

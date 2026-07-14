@@ -196,7 +196,7 @@ export function SearchCommandDialog({
                   className={cn(
                     "h-5 w-5 transition-all",
                     stock.isInWatchlist
-                      ? "fill-yellow-400 text-yellow-400"
+                      ? "fill-indigo-400 text-indigo-400"
                       : "text-gray-500",
                   )}
                 />

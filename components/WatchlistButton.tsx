@@ -74,14 +74,14 @@ const WatchlistButton = ({
         aria-pressed={added}
         className={`p-2 rounded-full transition-all active:scale-90 ${
           added
-            ? "text-yellow-400 bg-yellow-400/10"
+            ? "text-indigo-400 bg-indigo-400/10"
             : "text-gray-500 hover:text-white bg-white/5 hover:bg-white/10"
         }`}
       >
         {isPending ? (
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
-          <Star className={`w-5 h-5 ${added ? "fill-yellow-400" : ""}`} />
+          <Star className={`w-5 h-5 ${added ? "fill-indigo-400" : ""}`} />
         )}
       </button>
     );
