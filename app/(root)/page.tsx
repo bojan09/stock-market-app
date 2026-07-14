@@ -13,7 +13,7 @@ import { Watchlist } from "@/database/models/watchlist.model";
 import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { getNews } from "@/lib/actions/finnhub.actions";
-import { formatTimeAgo } from "@/lib/utils";
+import { formatTimeAgo, getTradingViewSymbol } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,33 +30,6 @@ const Home = async () => {
   const dbWatchlist = session?.user?.id
     ? await Watchlist.find({ userId: session.user.id })
     : [];
-
-  const getTradingViewSymbol = (symbol: string) => {
-    const s = symbol.toUpperCase();
-    if (s.includes(":")) return s;
-
-    const nyseStocks = [
-      "ORCL",
-      "CRM",
-      "V",
-      "MA",
-      "BRK.B",
-      "KO",
-      "DIS",
-      "JPM",
-      "NKE",
-      "BA",
-      "GS",
-      "WMT",
-      "IBM",
-      "AXP",
-    ];
-
-    if (nyseStocks.includes(s)) return `NYSE:${s}`;
-    if (s === "SPY") return "AMEX:SPY";
-
-    return `NASDAQ:${s}`;
-  };
 
   const formattedWatchlist = dbWatchlist.map((item) => ({
     s: getTradingViewSymbol(item.symbol),

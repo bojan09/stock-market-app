@@ -137,3 +137,16 @@ export const getFormattedTodayDate = () => new Date().toLocaleDateString('en-US'
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+const NYSE_STOCKS = [
+  "ORCL", "CRM", "V", "MA", "BRK.B", "KO", "DIS", "JPM", "NKE", "BA", "GS",
+  "WMT", "IBM", "AXP",
+];
+
+export const getTradingViewSymbol = (symbol: string) => {
+  const s = symbol.toUpperCase();
+  if (s.includes(":")) return s;
+  if (NYSE_STOCKS.includes(s)) return `NYSE:${s}`;
+  if (s === "SPY") return "AMEX:SPY";
+  return `NASDAQ:${s}`;
+};

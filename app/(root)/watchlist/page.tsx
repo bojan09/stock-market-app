@@ -9,6 +9,7 @@ import SortDropdown from "@/components/shared/SortDropdown";
 import SearchInput from "@/components/shared/SearchInput";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PageProps {
@@ -62,6 +63,13 @@ export default async function WatchlistPage({ searchParams }: PageProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/compare"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-600/50 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition-all"
+          >
+            <GitCompare size={16} />
+            Compare
+          </Link>
           <RefreshWatchlistButton />
         </div>
       </header>

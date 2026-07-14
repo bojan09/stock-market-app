@@ -277,6 +277,35 @@ export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
   largeChartUrl: "",
 });
 
+export const SYMBOL_COMPARISON_WIDGET_CONFIG = (
+  symbols: { s: string; d: string }[],
+) => ({
+  symbols: symbols.map((sym) => [sym.d, `${sym.s}|1D`]),
+  chartOnly: false,
+  width: "100%",
+  height: "100%",
+  locale: "en",
+  colorTheme: "dark",
+  autosize: true,
+  showVolume: false,
+  showMA: false,
+  hideDateRanges: false,
+  hideMarketStatus: false,
+  hideSymbolLogo: false,
+  scalePosition: "right",
+  scaleMode: "Normal",
+  fontFamily: "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+  fontSize: "10",
+  noTimeScale: false,
+  valuesTracking: "1",
+  changeMode: "price-and-percent",
+  chartType: "area",
+  headerFontSize: "medium",
+  lineWidth: 2,
+  lineType: 0,
+  dateRanges: ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"],
+});
+
 export const POPULAR_STOCK_SYMBOLS = [
   "AAPL",
   "MSFT",
