@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions/user.actions";
 import { getWatchlistSymbolsById } from "@/lib/actions/watchlist.actions";
 import { getNews, getStockQuote } from "@/lib/actions/finnhub.actions";
+import { getSingleStockNews } from "@/lib/actions/news.actions";
 import {
   getActiveAlertsGroupedBySymbol,
   markAlertTriggered,
@@ -181,6 +182,25 @@ export const checkPriceAlerts = inngest.createFunction(
         const quote = await getStockQuote(symbol);
         if (!quote || !quote.current) continue;
 
+        const anyHit = grouped[symbol].some((alert) =>
+          alert.alertType === "upper"
+            ? quote.current >= alert.threshold
+            : quote.current <= alert.threshold,
+        );
+        if (!anyHit) continue;
+
+        let relatedNews: { headline: string; url: string; source: string } | null =
+          null;
+        try {
+          const news = await getSingleStockNews(symbol);
+          const top = news.success ? news.articles[0] : null;
+          if (top) {
+            relatedNews = { headline: top.title, url: top.url, source: top.source };
+          }
+        } catch (e) {
+          console.error("Failed to fetch related news for alert", symbol, e);
+        }
+
         for (const alert of grouped[symbol]) {
           const hit =
             alert.alertType === "upper"
@@ -200,6 +220,7 @@ export const checkPriceAlerts = inngest.createFunction(
               alertType: alert.alertType,
               currentPrice: quote.current,
               targetPrice: alert.threshold,
+              relatedNews,
             });
             await markAlertTriggered(alert.id);
             results.push({ alertId: alert.id, symbol });

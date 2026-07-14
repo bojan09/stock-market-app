@@ -42,6 +42,7 @@ export const sendPriceAlertEmail = async ({
   alertType,
   currentPrice,
   targetPrice,
+  relatedNews,
 }: {
   email: string;
   symbol: string;
@@ -49,6 +50,7 @@ export const sendPriceAlertEmail = async ({
   alertType: "upper" | "lower";
   currentPrice: number;
   targetPrice: number;
+  relatedNews?: { headline: string; url: string; source: string } | null;
 }): Promise<void> => {
   const template =
     alertType === "upper"
@@ -60,12 +62,25 @@ export const sendPriceAlertEmail = async ({
     timeStyle: "short",
   });
 
+  const relatedNewsSection = relatedNews
+    ? `<div style="background-color: #212328; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">
+          Likely explanation
+        </h3>
+        <a href="${relatedNews.url}" style="color: #ffffff; font-size: 15px; line-height: 1.5; text-decoration: none;">
+          ${relatedNews.headline}
+        </a>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280;">${relatedNews.source}</p>
+      </div>`
+    : "";
+
   const htmlTemplate = template
     .replace(/{{symbol}}/g, symbol)
     .replace(/{{company}}/g, company)
     .replace(/{{timestamp}}/g, timestamp)
     .replace(/{{currentPrice}}/g, currentPrice.toFixed(2))
-    .replace(/{{targetPrice}}/g, targetPrice.toFixed(2));
+    .replace(/{{targetPrice}}/g, targetPrice.toFixed(2))
+    .replace("{{relatedNewsSection}}", relatedNewsSection);
 
   const mailOptions = {
     from: `"Signalist Alerts" <signalist@stocks.com>`,

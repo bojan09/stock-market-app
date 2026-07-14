@@ -478,7 +478,9 @@ export const STOCK_ALERT_UPPER_EMAIL_TEMPLATE = `<!DOCTYPE html>
                                     {{symbol}} has reached your target price! This could be a good time to review your position and consider taking profits or adjusting your strategy.
                                 </p>
                             </div>
-                            
+
+                            {{relatedNewsSection}}
+
                             <!-- Action Button -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 30px;">
                                 <tr>
@@ -687,7 +689,9 @@ export const STOCK_ALERT_LOWER_EMAIL_TEMPLATE = `<!DOCTYPE html>
                                     {{symbol}} dropped below your target price. This might be a good time to buy.
                                 </p>
                             </div>
-                            
+
+                            {{relatedNewsSection}}
+
                             <!-- Action Button -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 30px;">
                                 <tr>
