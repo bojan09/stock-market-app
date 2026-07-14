@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getPaginatedWatchlist } from "@/lib/actions/watchlist.actions";
 import WatchlistCard from "@/components/shared/WatchlistCard";
 import RefreshWatchlistButton from "@/components/shared/RefreshWatchlistButton";
+import PushNotificationToggle from "@/components/shared/PushNotificationToggle";
 import SortDropdown from "@/components/shared/SortDropdown";
 import SearchInput from "@/components/shared/SearchInput";
 import { redirect } from "next/navigation";
@@ -70,6 +71,7 @@ export default async function WatchlistPage({ searchParams }: PageProps) {
             <GitCompare size={16} />
             Compare
           </Link>
+          <PushNotificationToggle userId={session.user.id} />
           <RefreshWatchlistButton />
         </div>
       </header>

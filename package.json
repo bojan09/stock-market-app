@@ -39,7 +39,8 @@
     "shadcn": "^3.6.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "use-debounce": "^10.1.0"
+    "use-debounce": "^10.1.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -49,6 +50,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/react-select-country-list": "^2.2.3",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.24",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",

@@ -20,6 +20,8 @@ import {
   markAlertTriggered,
 } from "@/lib/actions/alert.actions";
 import { recordPriceSnapshots } from "@/lib/actions/priceHistory.actions";
+import { getSubscriptionsByUserId } from "@/lib/actions/pushSubscription.actions";
+import { sendPushNotification } from "@/lib/webpush";
 import { getFormattedTodayDate } from "@/lib/utils";
 
 export type UserForNewsEmail = {
@@ -227,6 +229,25 @@ export const checkPriceAlerts = inngest.createFunction(
             results.push({ alertId: alert.id, symbol });
           } catch (e) {
             console.error("Failed to send price alert email", alert.id, e);
+          }
+
+          try {
+            const subscriptions = await getSubscriptionsByUserId(alert.userId);
+            const direction = alert.alertType === "upper" ? "above" : "below";
+
+            await Promise.all(
+              subscriptions.map((sub) =>
+                sendPushNotification(sub, {
+                  title: `${alert.symbol} is ${direction} your target`,
+                  body: `Now at $${quote.current.toFixed(2)}, past your $${alert.threshold.toFixed(2)} target.`,
+                  url: `/stocks/${alert.symbol.toLowerCase()}`,
+                }).catch((e) =>
+                  console.error("Push send failed for", alert.userId, e),
+                ),
+              ),
+            );
+          } catch (e) {
+            console.error("Failed to send push notification", alert.id, e);
           }
         }
       }
