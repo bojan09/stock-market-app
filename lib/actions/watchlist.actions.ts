@@ -4,7 +4,7 @@ import { connectToDatabase } from "@/database/mongoose";
 import { Watchlist } from "@/database/models/watchlist.model";
 import { revalidatePath } from "next/cache";
 
-const FINNHUB_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 
 /**
  * Fetches live price data from Finnhub.
@@ -23,19 +23,13 @@ export async function getWatchlistLiveQuotes(symbols: string[]) {
           );
           const result = await res.json();
 
-          // FINNHUB BUG FIX: Fallback for SPY if 'c' is 0 or missing
           if (!result.c || result.c === 0) {
-            const fallbacks: Record<string, any> = {
-              SPY: { c: 585.42, d: 1.25, dp: 0.21 },
-            };
-
-            const mock = fallbacks[symbol] || { c: 0, d: 0, dp: 0 };
             return {
               symbol,
-              price: mock.c,
-              change: mock.d,
-              changePercent: mock.dp,
-              isFallback: true,
+              price: 0,
+              change: 0,
+              changePercent: 0,
+              error: true,
             };
           }
 
@@ -100,38 +94,6 @@ export async function toggleWatchlist(
 }
 
 /**
- * NEW: Cleanup utility to fix existing duplicate issues (like your HIMS problem).
- * Call this once or add a button to your settings to 'Fix Watchlist'.
- */
-export async function cleanupWatchlistDuplicates(userId: string) {
-  if (!userId) return;
-  try {
-    await connectToDatabase();
-    const watchlist = await Watchlist.find({ userId });
-
-    const seen = new Set();
-    const duplicates = [];
-
-    for (const item of watchlist) {
-      if (seen.has(item.symbol)) {
-        duplicates.push(item._id);
-      } else {
-        seen.add(item.symbol);
-      }
-    }
-
-    if (duplicates.length > 0) {
-      await Watchlist.deleteMany({ _id: { $in: duplicates } });
-      revalidatePath("/", "layout");
-    }
-    return { success: true, removedCount: duplicates.length };
-  } catch (error) {
-    console.error("Cleanup error:", error);
-    return { success: false };
-  }
-}
-
-/**
  * Fetches symbols using the unique User ID.
  */
 export async function getWatchlistSymbolsById(
@@ -155,19 +117,28 @@ export async function getPaginatedWatchlist(
   userId: string,
   page: number = 1,
   limit: number = 5,
+  options?: { sortBy?: "recent" | "oldest" | "symbol"; search?: string },
 ) {
   if (!userId) return { symbols: [], total: 0 };
   try {
     await connectToDatabase();
     const skip = (page - 1) * limit;
 
+    const query: Record<string, unknown> = { userId };
+    if (options?.search) {
+      query.symbol = { $regex: options.search.toUpperCase(), $options: "i" };
+    }
+
+    const sort: Record<string, 1 | -1> =
+      options?.sortBy === "oldest"
+        ? { addedAt: 1 }
+        : options?.sortBy === "symbol"
+          ? { symbol: 1 }
+          : { addedAt: -1 };
+
     const [items, total] = await Promise.all([
-      Watchlist.find({ userId: userId })
-        .sort({ addedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Watchlist.countDocuments({ userId: userId }),
+      Watchlist.find(query).sort(sort).skip(skip).limit(limit).lean(),
+      Watchlist.countDocuments(query),
     ]);
 
     return {
@@ -177,20 +148,5 @@ export async function getPaginatedWatchlist(
   } catch (err) {
     console.error("Pagination error:", err);
     return { symbols: [], total: 0 };
-  }
-}
-
-// Keep for background jobs if needed
-export async function getWatchlistSymbolsByEmail(
-  email: string,
-): Promise<string[]> {
-  if (!email) return [];
-  try {
-    await connectToDatabase();
-    const items = await Watchlist.find({ email }).select("symbol").lean();
-    return items.map((i) => String(i.symbol).toUpperCase());
-  } catch (err) {
-    console.error("Fetch symbols by email error:", err);
-    return [];
   }
 }

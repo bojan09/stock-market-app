@@ -55,10 +55,12 @@ export default function BookmarkButton({
     <button
       onClick={handleToggle}
       disabled={loading}
+      aria-label={isSaved ? "Remove bookmark" : "Bookmark article"}
+      aria-pressed={isSaved}
       className={`p-2 rounded-lg transition-all border ${
         isSaved
-          ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20"
-          : "bg-[#0F1115]/80 border-white/10 text-gray-400 hover:text-white"
+          ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+          : "bg-[#050810]/80 border-white/10 text-gray-400 hover:text-white"
       } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <Bookmark

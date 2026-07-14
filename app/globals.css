@@ -114,15 +114,18 @@
 
 /* === CUSTOM COLOR THEME === */
 @theme {
-  /* Extended Gray Scale */
-  --color-gray-900: #050505;
-  --color-gray-800: #141414;
-  --color-gray-700: #212328;
-  --color-gray-600: #30333a;
+  /* Deep navy gray scale */
+  --color-gray-900: #050810;
+  --color-gray-800: #0f1420;
+  --color-gray-700: #161c2c;
+  --color-gray-600: #232a3d;
   --color-gray-500: #9095a1;
   --color-gray-400: #ccdadc;
 
-  /* Vibrant Colors */
+  /* Brand accent + semantic colors */
+  --color-indigo-500: #6366f1;
+  --color-emerald-500: #10b981;
+  --color-rose-500: #f43f5e;
   --color-blue-600: #5862ff;
   --color-yellow-400: #fdd458;
   --color-yellow-500: #e8ba40;

@@ -29,20 +29,43 @@ type StockWithWatchlistStatus = {
   isInWatchlist: boolean;
 };
 
-interface SearchCommandProps {
+interface SearchTriggerProps {
   renderAs?: "button" | "text";
   label?: string;
-  userId: string;
   className?: string;
+  onOpen: () => void;
 }
 
-export default function SearchCommand({
+export function SearchTrigger({
   renderAs = "button",
   label,
-  userId,
   className,
-}: SearchCommandProps) {
-  const [open, setOpen] = useState(false);
+  onOpen,
+}: SearchTriggerProps) {
+  return (
+    <div onClick={onOpen} className={cn("cursor-pointer", className)}>
+      {renderAs === "text" ? (
+        <span className="hover:text-white transition-colors">
+          {label || "Search"}
+        </span>
+      ) : (
+        <Button>{label || "Search Stocks"}</Button>
+      )}
+    </div>
+  );
+}
+
+interface SearchCommandDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userId: string;
+}
+
+export function SearchCommandDialog({
+  open,
+  onOpenChange,
+  userId,
+}: SearchCommandDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -135,68 +158,53 @@ export default function SearchCommand({
   };
 
   return (
-    <>
-      <div
-        onClick={() => setOpen(true)}
-        className={cn("cursor-pointer", className)}
-      >
-        {renderAs === "text" ? (
-          <span className="hover:text-white transition-colors">
-            {label || "Search"}
-          </span>
-        ) : (
-          <Button>{label || "Search Stocks"}</Button>
+    <CommandDialog open={open} onOpenChange={onOpenChange}>
+      <div className="flex items-center border-b border-white/5 px-3 bg-[#0F1420]">
+        <CommandInput
+          value={searchTerm}
+          onValueChange={setSearchTerm}
+          placeholder="Search live markets..."
+          className="flex-1 bg-transparent border-none focus:ring-0"
+        />
+        {loading && (
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
         )}
       </div>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex items-center border-b border-white/5 px-3 bg-[#121212]">
-          <CommandInput
-            value={searchTerm}
-            onValueChange={setSearchTerm}
-            placeholder="Search live markets..."
-            className="flex-1 bg-transparent border-none focus:ring-0"
-          />
-          {loading && (
-            <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
-          )}
-        </div>
-
-        <CommandList className="bg-[#121212] overflow-y-auto max-h-[400px]">
-          <div className="py-2">
-            {stocks.map((stock, index) => (
-              <Link
-                key={`${stock.symbol}-${index}`}
-                href={`/stocks/${stock.symbol}`}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
-              >
-                <TrendingUp className="h-4 w-4 text-gray-500" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-gray-100 truncate">
-                    {stock.name}
-                  </div>
-                  <div className="text-xs text-gray-500">{stock.symbol}</div>
+      <CommandList className="bg-[#0F1420] overflow-y-auto max-h-[400px]">
+        <div className="py-2">
+          {stocks.map((stock, index) => (
+            <Link
+              key={`${stock.symbol}-${index}`}
+              href={`/stocks/${stock.symbol}`}
+              onClick={() => onOpenChange(false)}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+            >
+              <TrendingUp className="h-4 w-4 text-gray-500" />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm text-gray-100 truncate">
+                  {stock.name}
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => handleWatchlistToggle(e, stock)}
-                  className="p-2 z-30"
-                >
-                  <Star
-                    className={cn(
-                      "h-5 w-5 transition-all",
-                      stock.isInWatchlist
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-500",
-                    )}
-                  />
-                </button>
-              </Link>
-            ))}
-          </div>
-        </CommandList>
-      </CommandDialog>
-    </>
+                <div className="text-xs text-gray-500">{stock.symbol}</div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => handleWatchlistToggle(e, stock)}
+                className="p-2 z-30"
+              >
+                <Star
+                  className={cn(
+                    "h-5 w-5 transition-all",
+                    stock.isInWatchlist
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-500",
+                  )}
+                />
+              </button>
+            </Link>
+          ))}
+        </div>
+      </CommandList>
+    </CommandDialog>
   );
 }

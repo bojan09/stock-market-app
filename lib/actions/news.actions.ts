@@ -9,7 +9,7 @@ import { getNews } from "./finnhub.actions";
  */
 export async function getSingleStockNews(symbol: string) {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    const apiKey = process.env.FINNHUB_API_KEY;
 
     // Define date range (Last 7 days)
     const to = new Date();
@@ -110,7 +110,7 @@ export async function getWatchlistNews(userId: string) {
 
 export async function getAnalystRecommendations(symbol: string) {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    const apiKey = process.env.FINNHUB_API_KEY;
     const url = `https://finnhub.io/api/v1/stock/recommendation?symbol=${symbol.toUpperCase()}&token=${apiKey}`;
 
     const response = await fetch(url, { next: { revalidate: 86400 } }); // Cache for 24 hours
@@ -130,7 +130,7 @@ export async function getAnalystRecommendations(symbol: string) {
 
 export async function getEarningsSurprises(symbol: string) {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    const apiKey = process.env.FINNHUB_API_KEY;
     if (!apiKey) throw new Error("Missing Finnhub API Key");
 
     const res = await fetch(

@@ -3,13 +3,25 @@ import {
   NEWS_SUMMARY_EMAIL_PROMPT,
   PERSONALIZED_WELCOME_EMAIL_PROMPT,
 } from "@/lib/inngest/prompts";
-import { sendNewsSummaryEmail, sendWelcomeEmail } from "@/lib/nodemailer";
-import { getAllUsersForNewsEmail } from "@/lib/actions/user.actions";
-import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
-import { getNews } from "@/lib/actions/finnhub.actions";
+import {
+  sendNewsSummaryEmail,
+  sendWelcomeEmail,
+  sendPriceAlertEmail,
+} from "@/lib/nodemailer";
+import {
+  getAllUsersForNewsEmail,
+  getUserEmailById,
+} from "@/lib/actions/user.actions";
+import { getWatchlistSymbolsById } from "@/lib/actions/watchlist.actions";
+import { getNews, getStockQuote } from "@/lib/actions/finnhub.actions";
+import {
+  getActiveAlertsGroupedBySymbol,
+  markAlertTriggered,
+} from "@/lib/actions/alert.actions";
 import { getFormattedTodayDate } from "@/lib/utils";
 
 export type UserForNewsEmail = {
+  id: string;
   email: string;
   fullName?: string;
 };
@@ -80,7 +92,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
       }> = [];
       for (const user of users as UserForNewsEmail[]) {
         try {
-          const symbols = await getWatchlistSymbolsByEmail(user.email);
+          const symbols = await getWatchlistSymbolsById(user.id);
           let articles = await getNews(symbols);
           // Enforce max 6 articles per user
           articles = (articles || []).slice(0, 6);
@@ -98,7 +110,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
       return perUser;
     });
 
-    // Step #3: (placeholder) Summarize news via AI
+    // Step #3: Summarize news via AI
     const userNewsSummaries: {
       user: UserForNewsEmail;
       newsContent: string | null;
@@ -129,7 +141,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
       }
     }
 
-    // Step #4: (placeholder) Send the emails
+    // Step #4: Send the emails
     await step.run("send-news-emails", async () => {
       await Promise.all(
         userNewsSummaries.map(async ({ user, newsContent }) => {
@@ -147,6 +159,62 @@ export const sendDailyNewsSummary = inngest.createFunction(
     return {
       success: true,
       message: "Daily news summary emails sent successfully",
+    };
+  },
+);
+
+export const checkPriceAlerts = inngest.createFunction(
+  { id: "check-price-alerts" },
+  { cron: "*/15 * * * *" },
+  async ({ step }) => {
+    const grouped = await step.run("get-active-alerts", getActiveAlertsGroupedBySymbol);
+    const symbols = Object.keys(grouped);
+
+    if (symbols.length === 0) {
+      return { success: true, message: "No active alerts to check" };
+    }
+
+    const triggered = await step.run("check-quotes-and-notify", async () => {
+      const results: Array<{ alertId: string; symbol: string }> = [];
+
+      for (const symbol of symbols) {
+        const quote = await getStockQuote(symbol);
+        if (!quote || !quote.current) continue;
+
+        for (const alert of grouped[symbol]) {
+          const hit =
+            alert.alertType === "upper"
+              ? quote.current >= alert.threshold
+              : quote.current <= alert.threshold;
+
+          if (!hit) continue;
+
+          const email = await getUserEmailById(alert.userId);
+          if (!email) continue;
+
+          try {
+            await sendPriceAlertEmail({
+              email,
+              symbol: alert.symbol,
+              company: alert.company,
+              alertType: alert.alertType,
+              currentPrice: quote.current,
+              targetPrice: alert.threshold,
+            });
+            await markAlertTriggered(alert.id);
+            results.push({ alertId: alert.id, symbol });
+          } catch (e) {
+            console.error("Failed to send price alert email", alert.id, e);
+          }
+        }
+      }
+
+      return results;
+    });
+
+    return {
+      success: true,
+      message: `Checked ${symbols.length} symbol(s), triggered ${triggered.length} alert(s)`,
     };
   },
 );

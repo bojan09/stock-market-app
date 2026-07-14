@@ -34,17 +34,17 @@ export default function EconomicCalendar() {
 
   if (loading)
     return (
-      <div className="w-full h-64 bg-[#16191F] border border-white/5 rounded-2xl flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-full h-64 bg-[#0F1420] border border-white/5 rounded-2xl flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
 
   return (
-    <div className="bg-[#16191F] border border-white/5 rounded-2xl overflow-hidden">
+    <div className="bg-[#0F1420] border border-white/5 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <CalendarDays className="text-blue-500" size={20} />
+          <CalendarDays className="text-indigo-500" size={20} />
           <h2 className="font-bold text-lg tracking-tight text-white">
             Economic Calendar
           </h2>
@@ -56,7 +56,7 @@ export default function EconomicCalendar() {
             onClick={() => setIsDemoMode(!isDemoMode)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
               isDemoMode
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
                 : "bg-white/5 text-gray-500 border border-white/5"
             }`}
           >
@@ -131,7 +131,7 @@ export default function EconomicCalendar() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-xs font-semibold text-gray-300 group-hover:text-blue-400">
+                      <span className="text-xs font-semibold text-gray-300 group-hover:text-indigo-400">
                         {event.event}
                       </span>
                     </td>

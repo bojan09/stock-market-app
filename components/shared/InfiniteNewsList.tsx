@@ -141,11 +141,11 @@ export default function InfiniteNewsList({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                 transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-                className="group flex flex-col bg-[#16191F] border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/40 transition-all duration-300 relative"
+                className="group flex flex-col bg-[#0F1420] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/40 transition-all duration-300 relative"
               >
-                <div className="relative h-44 w-full bg-[#0F1115] flex items-center justify-center overflow-hidden">
+                <div className="relative h-44 w-full bg-[#050810] flex items-center justify-center overflow-hidden">
                   {priceTarget && (
-                    <div className="absolute top-3 left-3 z-30 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md flex items-center gap-1 shadow-xl">
+                    <div className="absolute top-3 left-3 z-30 bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md flex items-center gap-1 shadow-xl">
                       <Target size={10} /> {priceTarget} TARGET
                     </div>
                   )}
@@ -190,7 +190,7 @@ export default function InfiniteNewsList({
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase">
-                      <span className="text-blue-400">{article.source}</span>
+                      <span className="text-indigo-400">{article.source}</span>
                       <span>•</span>
                       <span>{article.category || "General"}</span>
                     </div>
@@ -198,14 +198,14 @@ export default function InfiniteNewsList({
                       {tickers.map((t) => (
                         <span
                           key={t}
-                          className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[9px] font-black text-blue-300"
+                          className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[9px] font-black text-indigo-300"
                         >
                           ${t}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <h2 className="text-base font-bold line-clamp-2 group-hover:text-blue-400 transition-colors">
+                  <h2 className="text-base font-bold line-clamp-2 group-hover:text-indigo-400 transition-colors">
                     {article.headline}
                   </h2>
                   <p className="text-xs text-gray-500 mt-3 line-clamp-2 flex-1 leading-relaxed">
@@ -227,7 +227,7 @@ export default function InfiniteNewsList({
 
       {hasMore && (
         <div ref={ref} className="flex justify-center py-10">
-          <div className="w-6 h-6 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-t-transparent border-indigo-500 rounded-full animate-spin" />
         </div>
       )}
 
@@ -239,7 +239,7 @@ export default function InfiniteNewsList({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-50 p-3 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-blue-500 transition-colors border border-white/10"
+            className="fixed bottom-8 right-8 z-50 p-3 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-500 transition-colors border border-white/10"
           >
             <ArrowUp size={20} />
           </motion.button>

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistSymbolsById } from "@/lib/actions/watchlist.actions";
@@ -11,9 +11,11 @@ import {
   getPriceTargets,
   getInsiderTransactions,
 } from "@/lib/actions/stock-actions";
+import { getStockQuote } from "@/lib/actions/finnhub.actions";
 
 import TradingViewWidget from "@/components/TradingViewWidget";
 import WatchlistButton from "@/components/WatchlistButton";
+import WatchlistAlertButton from "@/components/shared/WatchlistAlertButton";
 import NewsFeed from "@/components/NewsFeed";
 import AnalystConsensus from "@/components/AnalystConsensus";
 import PriceTargets from "@/components/PriceTargets";
@@ -39,10 +41,11 @@ export default async function StockDetails({
   const standardEmbed = `https://s3.tradingview.com/external-embedding/embed-widget-`;
   const advancedChart = `https://s3.tradingview.com/tv.js`;
 
+  const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/sign-in");
 
-  const [watchedSymbols, news, analyst, target, insider, earnings] =
+  const [watchedSymbols, news, analyst, target, insider, earnings, quote] =
     await Promise.all([
       getWatchlistSymbolsById(session.user.id),
       getSingleStockNews(upperSymbol),
@@ -50,37 +53,45 @@ export default async function StockDetails({
       getPriceTargets(upperSymbol),
       getInsiderTransactions(upperSymbol),
       getEarningsSurprises(upperSymbol),
+      getStockQuote(upperSymbol),
     ]);
 
   const isInWatchlist = watchedSymbols.includes(upperSymbol);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F1115] text-white p-4 lg:p-8">
+    <div className="flex flex-col min-h-screen bg-gray-900 text-white p-4 lg:p-8">
       <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* --- DYNAMIC TERMINAL HEADER --- */}
-        <header className="bg-[#1A1D23] rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
-          {/* Ticker Tape removed from here */}
+        <header className="bg-gray-800 rounded-2xl border border-gray-600/50 shadow-2xl overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-6">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-black uppercase tracking-tighter">
                   {upperSymbol}
                 </h1>
-                <span className="text-blue-500 text-sm font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                <span className="text-indigo-500 text-sm font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
                   TERMINAL
                 </span>
               </div>
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">
-                Signalist Intel • v5.0 Live
+                Signalist Intel • Live
               </p>
             </div>
 
-            <WatchlistButton
-              symbol={upperSymbol}
-              company={upperSymbol}
-              isInWatchlist={isInWatchlist}
-              userId={session.user.id}
-            />
+            <div className="flex items-center gap-2">
+              <WatchlistAlertButton
+                symbol={upperSymbol}
+                company={upperSymbol}
+                userId={session.user.id}
+                currentPrice={quote?.current}
+              />
+              <WatchlistButton
+                symbol={upperSymbol}
+                company={upperSymbol}
+                isInWatchlist={isInWatchlist}
+                userId={session.user.id}
+              />
+            </div>
           </div>
         </header>
 
@@ -100,9 +111,16 @@ export default async function StockDetails({
               height={550}
             />
 
-            <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 shadow-xl">
+            {/* Company Profile */}
+            <TradingViewWidget
+              scriptUrl={`${standardEmbed}symbol-profile.js`}
+              config={COMPANY_PROFILE_WIDGET_CONFIG(symbol)}
+              height={440}
+            />
+
+            <div className="bg-gray-800 rounded-2xl border border-gray-600/50 p-6 shadow-xl">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
                 Live News
               </h3>
               <NewsFeed articles={news.articles} />

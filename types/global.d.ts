@@ -55,20 +55,6 @@ declare global {
     href: string;
   };
 
-  type SearchCommandProps = {
-    renderAs?: "button" | "text";
-    label?: string;
-    initialStocks: StockWithWatchlistStatus[];
-  };
-
-  export interface StockWithWatchlistStatus {
-    symbol: string;
-    name: string;
-    type: string;
-    exchange: string;
-    isWatched: boolean;
-  }
-
   type WelcomeEmailData = {
     email: string;
     name: string;
@@ -91,6 +77,23 @@ declare global {
   type StockWithWatchlistStatus = Stock & {
     isInWatchlist: boolean;
   };
+
+  type SearchCommandProps = {
+    renderAs?: "button" | "text";
+    label?: string;
+    initialStocks: StockWithWatchlistStatus[];
+  };
+
+  interface StockQuote {
+    c: number; // Current price
+    d: number; // Change
+    dp: number; // Percent change
+    h: number; // High
+    l: number; // Low
+    o: number; // Open
+    pc: number; // Previous close
+    t: number; // Timestamp
+  }
 
   type FinnhubSearchResult = {
     symbol: string;
@@ -174,15 +177,6 @@ declare global {
 
   type WatchlistNewsProps = {
     news?: MarketNewsArticle[];
-  };
-
-  type SearchCommandProps = {
-    open?: boolean;
-    setOpen?: (open: boolean) => void;
-    renderAs?: "button" | "text";
-    buttonLabel?: string;
-    buttonVariant?: "primary" | "secondary";
-    className?: string;
   };
 
   type AlertData = {

@@ -28,6 +28,7 @@ export default function ShareButton({ url }: { url: string }) {
         }
       `}
       title="Copy link"
+      aria-label={copied ? "Link copied" : "Copy link"}
     >
       {copied ? <Check size={16} /> : <Share2 size={16} />}
     </button>

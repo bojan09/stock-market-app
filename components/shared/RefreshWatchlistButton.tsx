@@ -33,7 +33,7 @@ export default function RefreshWatchlistButton() {
     <button
       onClick={handleRefresh}
       disabled={isPending}
-      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1A1D23] border border-gray-800 text-sm font-medium text-gray-300 hover:text-white hover:bg-[#23272F] transition-all disabled:opacity-50"
+      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0F1420] border border-gray-800 text-sm font-medium text-gray-300 hover:text-white hover:bg-[#161C2C] transition-all disabled:opacity-50"
     >
       <RefreshCw
         size={16}

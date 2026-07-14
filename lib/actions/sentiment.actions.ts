@@ -2,9 +2,11 @@
 
 import { getNews } from "./finnhub.actions";
 
-export async function getSentimentDashboardData() {
+export async function getSentimentDashboardData(
+  preFetchedArticles?: MarketNewsArticle[],
+) {
   try {
-    const articles = await getNews(); // This gets our 48 optimized articles
+    const articles = preFetchedArticles ?? (await getNews());
 
     const tickerMap: Record<
       string,

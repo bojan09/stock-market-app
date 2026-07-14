@@ -1,9 +1,11 @@
+"use server";
+
 /**
  * Fetches the most recent insider transactions for a given symbol.
  */
 export async function getInsiderTransactions(symbol: string) {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    const apiKey = process.env.FINNHUB_API_KEY;
     const upperSymbol = symbol.toUpperCase();
     const url = `https://finnhub.io/api/v1/stock/insider-transactions?symbol=${upperSymbol}&token=${apiKey}`;
 
@@ -32,7 +34,7 @@ export async function getInsiderTransactions(symbol: string) {
  */
 export async function getPriceTargets(symbol: string) {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    const apiKey = process.env.FINNHUB_API_KEY;
     const upperSymbol = symbol.toUpperCase();
 
     const [targetRes, quoteRes] = await Promise.all([

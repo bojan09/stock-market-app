@@ -19,7 +19,6 @@ import {
   Newspaper,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth.actions";
-import SearchCommand from "./SearchCommand";
 
 interface UserDropdownProps {
   user: {
@@ -28,9 +27,10 @@ interface UserDropdownProps {
     image?: string | null;
   };
   userId: string;
+  onOpenSearch: () => void;
 }
 
-const UserDropdown = ({ user, userId }: UserDropdownProps) => {
+const UserDropdown = ({ user, userId, onOpenSearch }: UserDropdownProps) => {
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -48,6 +48,7 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
+          aria-label={`Account menu for ${displayName}`}
           className="flex items-center gap-3 text-gray-400 hover:text-indigo-400 focus-visible:ring-0"
         >
           <Avatar className="h-8 w-8 border border-white/10">
@@ -62,7 +63,7 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
 
       <DropdownMenuContent
         align="end"
-        className="bg-[#121212] border-white/10 text-gray-400 min-w-[220px] p-2"
+        className="bg-[#0F1420] border-white/10 text-gray-400 min-w-[220px] p-2"
       >
         <DropdownMenuLabel className="px-2 py-3">
           <div className="flex flex-col">
@@ -77,7 +78,7 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
         <div className="md:hidden">
           <DropdownMenuItem
             className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/")}
           >
             <LayoutDashboard className="h-4 w-4 mr-3 text-gray-500" />
             Dashboard
@@ -104,14 +105,14 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
             onSelect={(e) => e.preventDefault()}
             className="focus:bg-white/5 focus:text-white py-2.5"
           >
-            <div className="flex items-center w-full">
+            <div
+              className="flex items-center w-full"
+              onClick={onOpenSearch}
+            >
               <Search className="h-4 w-4 mr-3 text-gray-500" />
-              <SearchCommand
-                renderAs="text"
-                label="Search Stocks"
-                userId={userId}
-                className="w-full text-left"
-              />
+              <span className="w-full text-left hover:text-white transition-colors">
+                Search Stocks
+              </span>
             </div>
           </DropdownMenuItem>
         </div>
@@ -120,7 +121,7 @@ const UserDropdown = ({ user, userId }: UserDropdownProps) => {
 
         <DropdownMenuItem
           onClick={handleSignOut}
-          className="cursor-pointer focus:bg-red-500/10 focus:text-red-500 py-2.5"
+          className="cursor-pointer focus:bg-rose-500/10 focus:text-rose-500 py-2.5"
         >
           <LogOut className="h-4 w-4 mr-3" /> Logout
         </DropdownMenuItem>

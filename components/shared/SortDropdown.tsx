@@ -5,31 +5,39 @@ import { ArrowUpDown, ChevronDown } from "lucide-react";
 
 export default function SortDropdown({
   defaultValue,
+  basePath = "/news",
+  options,
 }: {
   defaultValue: string;
+  basePath?: string;
+  options?: { value: string; label: string }[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const sortOptions = options ?? [
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
+  ];
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const params = new URLSearchParams(searchParams.toString());
     const value = e.target.value;
 
-    if (value === "newest") {
+    if (value === sortOptions[0].value) {
       params.delete("sortBy");
     } else {
       params.set("sortBy", value);
     }
 
     // Using replace and scroll: false for a seamless update
-    router.replace(`/news?${params.toString()}`, { scroll: false });
+    router.replace(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
   return (
-    <div className="relative flex items-center bg-[#16191F] border border-white/5 rounded-xl px-3 py-2 hover:border-white/10 transition-all group">
+    <div className="relative flex items-center bg-[#0F1420] border border-white/5 rounded-xl px-3 py-2 hover:border-white/10 transition-all group">
       <ArrowUpDown
         size={14}
-        className="text-gray-500 mr-2 group-hover:text-blue-400 transition-colors"
+        className="text-gray-500 mr-2 group-hover:text-indigo-400 transition-colors"
       />
 
       <select
@@ -37,12 +45,11 @@ export default function SortDropdown({
         onChange={handleSortChange}
         className="bg-transparent text-xs font-bold text-gray-300 focus:outline-none appearance-none cursor-pointer pr-6 z-10"
       >
-        <option value="newest" className="bg-[#16191F] text-white">
-          Newest First
-        </option>
-        <option value="oldest" className="bg-[#16191F] text-white">
-          Oldest First
-        </option>
+        {sortOptions.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-[#0F1420] text-white">
+            {opt.label}
+          </option>
+        ))}
       </select>
 
       <ChevronDown

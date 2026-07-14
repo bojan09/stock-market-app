@@ -3,6 +3,7 @@ import { getStockQuote } from "@/lib/actions/finnhub.actions";
 import { TrendingUp, TrendingDown, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RemoveFromWatchlistButton from "./RemoveFromWatchlistButton";
+import WatchlistAlertButton from "./WatchlistAlertButton";
 
 interface WatchlistCardProps {
   symbol: string;
@@ -41,7 +42,7 @@ export default async function WatchlistCard({
   return (
     <div className="group flex items-center gap-2 sm:gap-4 w-full">
       <Link href={`/stocks/${symbol.toLowerCase()}`} className="flex-1 min-w-0">
-        <div className="flex items-center justify-between p-4 sm:p-5 bg-[#1A1D23] hover:bg-[#23272F] rounded-2xl border border-white/5 transition-all duration-200 relative overflow-hidden">
+        <div className="flex items-center justify-between p-4 sm:p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl border border-gray-600/50 transition-all duration-200 relative overflow-hidden">
           {/* FIXED BACKGROUND TRENDLINE: Lowered opacity and ensured it stays behind content */}
           <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.07] pointer-events-none transition-opacity group-hover:opacity-[0.12]">
             <svg
@@ -54,7 +55,7 @@ export default async function WatchlistCard({
               <path
                 d={sparklinePath}
                 fill="none"
-                stroke={isPositive ? "#22c55e" : "#ef4444"}
+                stroke={isPositive ? "#10b981" : "#f43f5e"}
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -68,8 +69,8 @@ export default async function WatchlistCard({
               className={cn(
                 "p-2.5 sm:p-3 rounded-xl shrink-0",
                 isPositive
-                  ? "bg-green-500/10 text-green-500"
-                  : "bg-red-500/10 text-red-500",
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-rose-500/10 text-rose-500",
               )}
             >
               {isPositive ? (
@@ -83,7 +84,7 @@ export default async function WatchlistCard({
                 <h3 className="font-bold text-base sm:text-lg text-white uppercase truncate">
                   {symbol}
                 </h3>
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               </div>
               <p className="text-[10px] text-gray-500 font-medium flex items-center gap-1 mt-0.5 truncate">
                 <Clock size={10} />
@@ -102,7 +103,7 @@ export default async function WatchlistCard({
               <div
                 className={cn(
                   "absolute h-full rounded-full transition-all duration-700",
-                  isPositive ? "bg-green-500" : "bg-red-500",
+                  isPositive ? "bg-emerald-500" : "bg-rose-500",
                 )}
                 style={{
                   width: `${Math.min(Math.max(rangeProgress, 5), 100)}%`,
@@ -120,7 +121,7 @@ export default async function WatchlistCard({
               <p
                 className={cn(
                   "text-xs sm:text-sm font-bold mt-0.5",
-                  isPositive ? "text-green-500" : "text-red-500",
+                  isPositive ? "text-emerald-500" : "text-rose-500",
                 )}
               >
                 {isPositive ? "+" : ""}
@@ -135,8 +136,14 @@ export default async function WatchlistCard({
         </div>
       </Link>
 
-      {/* Action Area: Remove Button */}
-      <div className="flex items-center justify-center shrink-0 z-20">
+      {/* Action Area: Alert + Remove */}
+      <div className="flex items-center gap-2 justify-center shrink-0 z-20">
+        <WatchlistAlertButton
+          symbol={symbol}
+          company={symbol}
+          userId={userId}
+          currentPrice={quote.current}
+        />
         <RemoveFromWatchlistButton symbol={symbol} userId={userId} />
       </div>
     </div>

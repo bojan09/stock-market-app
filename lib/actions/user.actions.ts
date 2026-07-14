@@ -28,3 +28,22 @@ export const getAllUsersForNewsEmail = async () => {
     return [];
   }
 };
+
+export const getUserEmailById = async (
+  userId: string,
+): Promise<string | null> => {
+  try {
+    const mongoose = await connectToDatabase();
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("Mongoose connection not connected");
+
+    const user = await db
+      .collection("user")
+      .findOne({ id: userId }, { projection: { email: 1 } });
+
+    return user?.email ?? null;
+  } catch (e) {
+    console.error("Error fetching user email by id:", e);
+    return null;
+  }
+};

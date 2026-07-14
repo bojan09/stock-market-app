@@ -38,7 +38,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[200px] text-gray-500">
+      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[200px] text-gray-500">
         <AlertCircle className="w-8 h-8 mb-2 opacity-20" />
         <p className="text-xs font-bold uppercase tracking-widest">
           Earnings data unavailable
@@ -48,7 +48,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
   }
 
   return (
-    <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 shadow-xl w-full">
+    <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 shadow-xl w-full">
       <div className="flex justify-between items-center mb-6">
         <div className="space-y-1">
           <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -93,7 +93,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
             <Tooltip
               cursor={{ fill: "rgba(255,255,255,0.03)" }}
               contentStyle={{
-                backgroundColor: "#1A1D23",
+                backgroundColor: "#0F1420",
                 border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: "12px",
                 fontSize: "12px",
@@ -150,7 +150,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             <span className="text-[9px] text-gray-500 font-bold uppercase">
               Miss
             </span>

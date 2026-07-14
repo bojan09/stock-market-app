@@ -34,8 +34,8 @@ export default function BackToTop() {
         onClick={scrollToTop}
         className={`
           flex items-center justify-center w-12 h-12 
-          rounded-full bg-blue-600 text-white shadow-2xl 
-          transition-all duration-300 hover:bg-blue-500 hover:scale-110
+          rounded-full bg-indigo-600 text-white shadow-2xl 
+          transition-all duration-300 hover:bg-indigo-500 hover:scale-110
           ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}
         `}
         aria-label="Back to top"

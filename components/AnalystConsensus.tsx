@@ -28,21 +28,21 @@ export default function AnalystConsensus({
     buySide > sellSide ? "BUY" : buySide === sellSide ? "HOLD" : "SELL";
   const consensusColor =
     consensus === "BUY"
-      ? "text-green-400"
+      ? "text-emerald-400"
       : consensus === "SELL"
-        ? "text-red-400"
+        ? "text-rose-400"
         : "text-yellow-400";
 
   return (
-    <div className="relative group bg-[#1A1D23] rounded-2xl border border-white/5 p-6 space-y-6 shadow-2xl transition-all hover:border-white/10">
+    <div className="relative group bg-[#0F1420] rounded-2xl border border-white/5 p-6 space-y-6 shadow-2xl transition-all hover:border-white/10">
       {/* Decorative Background Glow */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none" />
 
       {/* Header Section */}
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-            <BarChart3 className="w-3.5 h-3.5 text-blue-500" />
+            <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
             Market Sentiment
           </h3>
           <div className="flex items-baseline gap-2">
@@ -57,11 +57,11 @@ export default function AnalystConsensus({
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className="text-[9px] text-blue-400/80 font-black bg-blue-400/10 border border-blue-400/20 px-2 py-0.5 rounded-full backdrop-blur-md">
+          <span className="text-[9px] text-indigo-400/80 font-black bg-indigo-400/10 border border-indigo-400/20 px-2 py-0.5 rounded-full backdrop-blur-md">
             {data.period}
           </span>
           <div className="flex items-center gap-1.5 px-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">
               Live Feed
             </span>
@@ -74,11 +74,11 @@ export default function AnalystConsensus({
         <div className="h-2 w-full flex rounded-full overflow-hidden bg-white/5 gap-[2px]">
           <div
             style={{ width: `${getWidth(data.strongBuy)}%` }}
-            className="bg-green-600 transition-all duration-500 hover:brightness-125"
+            className="bg-emerald-600 transition-all duration-500 hover:brightness-125"
           />
           <div
             style={{ width: `${getWidth(data.buy)}%` }}
-            className="bg-green-400 transition-all duration-500 hover:brightness-125"
+            className="bg-emerald-400 transition-all duration-500 hover:brightness-125"
           />
           <div
             style={{ width: `${getWidth(data.hold)}%` }}
@@ -86,11 +86,11 @@ export default function AnalystConsensus({
           />
           <div
             style={{ width: `${getWidth(data.sell)}%` }}
-            className="bg-red-400 transition-all duration-500 hover:brightness-125"
+            className="bg-rose-400 transition-all duration-500 hover:brightness-125"
           />
           <div
             style={{ width: `${getWidth(data.strongSell)}%` }}
-            className="bg-red-600 transition-all duration-500 hover:brightness-125"
+            className="bg-rose-600 transition-all duration-500 hover:brightness-125"
           />
         </div>
         <div className="flex justify-between px-1">
@@ -108,7 +108,7 @@ export default function AnalystConsensus({
         <Stat
           label="Buy"
           value={buySide}
-          color="bg-green-500"
+          color="bg-emerald-500"
           glow="shadow-[0_0_8px_rgba(34,197,94,0.3)]"
         />
         <Stat
@@ -120,7 +120,7 @@ export default function AnalystConsensus({
         <Stat
           label="Sell"
           value={sellSide}
-          color="bg-red-500"
+          color="bg-rose-500"
           glow="shadow-[0_0_8px_rgba(239,68,68,0.3)]"
         />
       </div>

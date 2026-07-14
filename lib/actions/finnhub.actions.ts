@@ -32,8 +32,6 @@ interface FinnhubQuote {
 }
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
-const NEXT_PUBLIC_FINNHUB_API_KEY =
-  process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? "";
 
 async function fetchJSON<T>(
   url: string,
@@ -59,7 +57,7 @@ export async function getNews(
 ): Promise<MarketNewsArticle[]> {
   try {
     const range = getDateRange(7); // Increased to 7 days for more depth
-    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    const token = process.env.FINNHUB_API_KEY;
     if (!token) {
       throw new Error("FINNHUB API key is not configured");
     }
@@ -130,7 +128,7 @@ export async function getNews(
 export const searchStocks = cache(
   async (query?: string): Promise<StockWithWatchlistStatus[]> => {
     try {
-      const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+      const token = process.env.FINNHUB_API_KEY;
       if (!token) {
         console.error(
           "Error in stock search: FINNHUB API key is not configured",
@@ -191,7 +189,7 @@ export const searchStocks = cache(
 
 export async function getStockQuote(symbol: string) {
   try {
-    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    const token = process.env.FINNHUB_API_KEY;
     const response = await fetch(
       `${FINNHUB_BASE_URL}/quote?symbol=${symbol.toUpperCase()}&token=${token}`,
     );
@@ -214,7 +212,7 @@ export async function getRandomMarketSuggestions(
   watchedSymbols: string[],
 ): Promise<StockWithWatchlistStatus[]> {
   try {
-    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    const token = process.env.FINNHUB_API_KEY;
     const url = `${FINNHUB_BASE_URL}/stock/symbol?exchange=US&token=${token}`;
     const allStocks = await fetchJSON<FinnhubStockSymbol[]>(url, 86400);
 

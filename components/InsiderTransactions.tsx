@@ -8,7 +8,7 @@ export default function InsiderTransactions({
 }) {
   if (!transactions || transactions.length === 0) {
     return (
-      <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 text-center">
+      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 text-center">
         <p className="text-xs text-gray-500 italic">
           No recent insider activity reported.
         </p>
@@ -17,10 +17,10 @@ export default function InsiderTransactions({
   }
 
   return (
-    <div className="bg-[#1A1D23] rounded-2xl border border-white/5 overflow-hidden">
+    <div className="bg-[#0F1420] rounded-2xl border border-white/5 overflow-hidden">
       <div className="p-4 border-b border-white/5 flex justify-between items-center">
         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-          <User className="w-4 h-4 text-blue-500" />
+          <User className="w-4 h-4 text-indigo-500" />
           Insider Activity
         </h3>
       </div>
@@ -48,8 +48,8 @@ export default function InsiderTransactions({
                   <span
                     className={`inline-flex items-center font-bold px-2 py-0.5 rounded ${
                       tx.isBuy
-                        ? "text-green-400 bg-green-400/10"
-                        : "text-red-400 bg-red-500/10"
+                        ? "text-emerald-400 bg-emerald-400/10"
+                        : "text-rose-400 bg-rose-500/10"
                     }`}
                   >
                     {tx.isBuy ? (

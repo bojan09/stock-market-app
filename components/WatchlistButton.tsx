@@ -68,6 +68,10 @@ const WatchlistButton = ({
       <button
         onClick={handleClick}
         disabled={isPending}
+        aria-label={
+          added ? `Remove ${symbol} from watchlist` : `Add ${symbol} to watchlist`
+        }
+        aria-pressed={added}
         className={`p-2 rounded-full transition-all active:scale-90 ${
           added
             ? "text-yellow-400 bg-yellow-400/10"
@@ -90,8 +94,8 @@ const WatchlistButton = ({
       disabled={isPending}
       className={`group relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-w-[140px] ${
         added
-          ? "bg-white/5 text-gray-400 border border-white/10 hover:bg-red-500 hover:text-white hover:border-red-500"
-          : "bg-blue-600 text-white border border-blue-500 hover:bg-blue-700 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+          ? "bg-white/5 text-gray-400 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-500"
+          : "bg-indigo-600 text-white border border-indigo-500 hover:bg-indigo-700 hover:shadow-[0_0_20px_rgba(79, 70, 229,0.4)]"
       } ${isPending ? "opacity-70 cursor-not-allowed" : ""}`}
     >
       {isPending ? (

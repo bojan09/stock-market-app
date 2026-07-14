@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
-import SearchCommand from "./SearchCommand";
+import { SearchTrigger, SearchCommandDialog } from "./SearchCommand";
 import UserDropdown from "./UserDropdown";
 
 interface HeaderProps {
@@ -18,6 +19,7 @@ interface HeaderProps {
 
 const Header = ({ user }: HeaderProps) => {
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/60 backdrop-blur-xl">
@@ -57,10 +59,10 @@ const Header = ({ user }: HeaderProps) => {
                   key={item.href}
                   className="text-[13px] uppercase tracking-widest font-semibold text-gray-500 transition-all hover:text-white"
                 >
-                  <SearchCommand
+                  <SearchTrigger
                     renderAs="text"
                     label={item.label}
-                    userId={user.id}
+                    onOpen={() => setSearchOpen(true)}
                   />
                 </div>
               );
@@ -83,9 +85,19 @@ const Header = ({ user }: HeaderProps) => {
 
         {/* USER DROPDOWN */}
         <div className="flex items-center">
-          <UserDropdown user={user} userId={user.id} />
+          <UserDropdown
+            user={user}
+            userId={user.id}
+            onOpenSearch={() => setSearchOpen(true)}
+          />
         </div>
       </div>
+
+      <SearchCommandDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        userId={user.id}
+      />
     </header>
   );
 };

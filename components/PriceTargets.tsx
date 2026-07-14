@@ -22,7 +22,7 @@ export default function PriceTargets({ data }: PriceTargetProps) {
     data.current === undefined
   ) {
     return (
-      <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[160px] text-center space-y-3">
+      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[160px] text-center space-y-3">
         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
           <Info className="w-5 h-5 text-gray-500" />
         </div>
@@ -49,17 +49,17 @@ export default function PriceTargets({ data }: PriceTargetProps) {
   const markerPos = Math.min(Math.max(currentPos, 0), 100);
 
   return (
-    <div className="bg-[#1A1D23] rounded-2xl border border-white/5 p-6 space-y-6 shadow-xl">
+    <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 space-y-6 shadow-xl">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-          <Target className="w-4 h-4 text-blue-500" />
+          <Target className="w-4 h-4 text-indigo-500" />
           Price Targets
         </h3>
         <div
           className={`flex items-center gap-1 text-xs font-black px-2 py-1 rounded ${
             isPositive
-              ? "bg-green-500/10 text-green-400"
-              : "bg-red-500/10 text-red-400"
+              ? "bg-emerald-500/10 text-emerald-400"
+              : "bg-rose-500/10 text-rose-400"
           }`}
         >
           {isPositive ? (
@@ -83,7 +83,7 @@ export default function PriceTargets({ data }: PriceTargetProps) {
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">
               Current Price
             </p>
-            <p className="text-lg font-bold text-blue-400">
+            <p className="text-lg font-bold text-indigo-400">
               ${current.toFixed(2)}
             </p>
           </div>
@@ -101,8 +101,8 @@ export default function PriceTargets({ data }: PriceTargetProps) {
               className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center group z-20"
               style={{ left: `${markerPos}%` }}
             >
-              <div className="w-3.5 h-3.5 bg-blue-500 rounded-full border-2 border-[#1A1D23] shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
-              <span className="absolute -top-6 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded shadow-lg">
+              <div className="w-3.5 h-3.5 bg-indigo-500 rounded-full border-2 border-[#0F1420] shadow-[0_0_12px_rgba(99, 102, 241,0.6)]" />
+              <span className="absolute -top-6 text-[9px] font-black text-white bg-indigo-600 px-1.5 py-0.5 rounded shadow-lg">
                 NOW
               </span>
             </div>

@@ -62,10 +62,11 @@ export default function RemoveFromWatchlistButton({
       <button
         onClick={handleRemove}
         disabled={isPending}
+        aria-label={showConfirm ? `Confirm remove ${symbol}` : `Remove ${symbol} from watchlist`}
         className={`flex items-center gap-2 px-3 h-8 rounded-lg transition-all duration-200 overflow-hidden ${
           showConfirm
-            ? "bg-red-500 text-white w-auto shadow-lg shadow-red-500/20"
-            : "bg-white/5 text-gray-400 hover:bg-red-500/10 hover:text-red-500 w-10"
+            ? "bg-rose-500 text-white w-auto shadow-lg shadow-rose-500/20"
+            : "bg-white/5 text-gray-400 hover:bg-rose-500/10 hover:text-rose-500 w-10"
         } disabled:opacity-50`}
       >
         <div className="flex items-center justify-center shrink-0">
@@ -91,6 +92,7 @@ export default function RemoveFromWatchlistButton({
             e.stopPropagation();
             setShowConfirm(false);
           }}
+          aria-label="Cancel remove"
           className="ml-1 p-1 text-gray-500 hover:text-white transition-colors"
         >
           <X className="h-3.5 w-3.5" />

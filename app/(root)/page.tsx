@@ -1,17 +1,24 @@
 import TradingViewWidget from "@/components/TradingViewWidget";
 import DailyPerformers from "@/components/DailyPerformers";
+import NewsFeed from "@/components/NewsFeed";
+import RecentAlertsPanel from "@/components/RecentAlertsPanel";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   HEATMAP_WIDGET_CONFIG,
   MARKET_DATA_WIDGET_CONFIG,
   MARKET_OVERVIEW_WIDGET_CONFIG,
-  TOP_STORIES_WIDGET_CONFIG,
 } from "@/lib/constants";
 import { connectToDatabase } from "@/database/mongoose";
 import { Watchlist } from "@/database/models/watchlist.model";
-import { auth } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
+import { getNews } from "@/lib/actions/finnhub.actions";
+import { formatTimeAgo } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 const Home = async () => {
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -77,8 +84,18 @@ const Home = async () => {
     ],
   };
 
+  const rawNews = await getNews(dbWatchlist.map((item) => item.symbol));
+  const newsArticles = rawNews.slice(0, 5).map((article) => ({
+    id: article.id,
+    title: article.headline,
+    url: article.url,
+    source: article.source,
+    summary: article.summary,
+    time: formatTimeAgo(article.datetime),
+  }));
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0a] px-4 md:px-10 pt-4 pb-8 md:pt-6 md:pb-12 home-wrapper w-full mx-auto text-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-900 px-4 md:px-10 pt-4 pb-8 md:pt-6 md:pb-12 home-wrapper w-full mx-auto text-gray-100">
       {/* Header Area: Titles and Watchlist Performance */}
       <header className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center mb-10 border-b border-white/5 pb-10">
         <div className="flex flex-col justify-center">
@@ -95,7 +112,7 @@ const Home = async () => {
         </div>
       </header>
 
-      {/* Grid Section 1 */}
+      {/* Grid Section 1: Overview + Heatmap */}
       <section className="w-full grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10 mb-10">
         <div className="col-span-1 space-y-4">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold px-1">
@@ -122,21 +139,30 @@ const Home = async () => {
         </div>
       </section>
 
-      {/* Grid Section 2 */}
-      <section className="w-full grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10">
-        <div className="col-span-1 space-y-4">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold px-1">
-            Top Stories
-          </h2>
-          <TradingViewWidget
-            scriptUrl={`${scriptUrl}timeline.js`}
-            config={TOP_STORIES_WIDGET_CONFIG}
-            height={550}
-            className="rounded-2xl border border-white/5 shadow-2xl overflow-hidden"
-          />
-        </div>
+      {/* Grid Section 2: Recent Alerts + Latest News */}
+      <section className="w-full grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-10 mb-10">
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Recent Alerts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RecentAlertsPanel userId={session?.user?.id ?? ""} />
+          </CardContent>
+        </Card>
 
-        <div className="col-span-1 xl:col-span-2 space-y-4">
+        <Card className="col-span-1 xl:col-span-2">
+          <CardHeader>
+            <CardTitle>Latest News</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NewsFeed articles={newsArticles} />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Grid Section 3: Market Quotes */}
+      <section className="w-full">
+        <div className="space-y-4">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold px-1">
             Market Quotes
           </h2>

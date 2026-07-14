@@ -7,8 +7,12 @@ import { useDebounce } from "use-debounce";
 
 export default function SearchInput({
   defaultValue = "",
+  basePath = "/news",
+  placeholder = "Search headlines or keywords...",
 }: {
   defaultValue?: string;
+  basePath?: string;
+  placeholder?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,9 +43,9 @@ export default function SearchInput({
       }
 
       // replace doesn't add to history; scroll: false prevents jumping
-      router.replace(`/news?${params.toString()}`, { scroll: false });
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
     }
-  }, [query, router, searchParams]);
+  }, [query, router, searchParams, basePath]);
 
   // Synchronize internal text state if the URL is cleared externally
   useEffect(() => {
@@ -56,19 +60,20 @@ export default function SearchInput({
       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
         <Search
           size={14}
-          className="text-gray-500 group-focus-within:text-blue-500 transition-colors"
+          className="text-gray-500 group-focus-within:text-indigo-500 transition-colors"
         />
       </div>
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Search headlines or keywords..."
-        className="w-full bg-[#16191F] border border-white/5 rounded-xl py-2 pl-9 pr-9 text-xs font-medium focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-gray-600 text-white"
+        placeholder={placeholder}
+        className="w-full bg-[#0F1420] border border-white/5 rounded-xl py-2 pl-9 pr-9 text-xs font-medium focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-gray-600 text-white"
       />
       {text && (
         <button
           onClick={() => setText("")}
+          aria-label="Clear search"
           className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-white"
           type="button"
         >

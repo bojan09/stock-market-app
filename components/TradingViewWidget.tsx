@@ -128,6 +128,7 @@ const TradingViewWidget = ({
               <button
                 type="button"
                 onClick={handleFullScreen}
+                aria-label={title ? `Expand ${title} to fullscreen` : "Expand to fullscreen"}
                 className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/15 transition-all text-gray-400"
               >
                 <Maximize2 className="w-4 h-4" />
@@ -141,7 +142,7 @@ const TradingViewWidget = ({
         id={`tv-widget-${widgetId}`}
         ref={containerRef}
         className={cn(
-          "tradingview-widget-container rounded-2xl overflow-hidden border border-white/5 bg-[#16191F] shadow-2xl",
+          "tradingview-widget-container rounded-2xl overflow-hidden border border-white/5 bg-[#0F1420] shadow-2xl",
           className,
         )}
         style={{ height }}
