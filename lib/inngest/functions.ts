@@ -43,7 +43,7 @@ export const sendSignUpEmail = inngest.createFunction(
     );
 
     const response = await step.ai.infer("generate-welcome-intro", {
-      model: step.ai.models.gemini({ model: "gemini-2.5-flash-lite" }),
+      model: step.ai.models.gemini({ model: "gemini-flash-latest" }),
       body: {
         contents: [
           {
@@ -124,7 +124,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
         );
 
         const response = await step.ai.infer(`summarize-news-${user.email}`, {
-          model: step.ai.models.gemini({ model: "gemini-2.5-flash-lite" }),
+          model: step.ai.models.gemini({ model: "gemini-flash-latest" }),
           body: {
             contents: [{ role: "user", parts: [{ text: prompt }] }],
           },

@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { unstable_cache } from "next/cache";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 async function fetchAiSummary(articles: any[]) {
   if (!articles || articles.length === 0) return null;
