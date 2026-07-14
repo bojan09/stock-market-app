@@ -63,7 +63,7 @@ const UserDropdown = ({ user, userId, onOpenSearch }: UserDropdownProps) => {
 
       <DropdownMenuContent
         align="end"
-        className="bg-[#0F1420] border-white/10 text-gray-400 min-w-[220px] p-2"
+        className="bg-gray-800 border-white/10 text-gray-400 min-w-[220px] p-2"
       >
         <DropdownMenuLabel className="px-2 py-3">
           <div className="flex flex-col">

@@ -141,9 +141,9 @@ export default function InfiniteNewsList({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                 transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-                className="group flex flex-col bg-[#0F1420] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/40 transition-all duration-300 relative"
+                className="group flex flex-col bg-gray-800 border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/40 transition-all duration-300 relative"
               >
-                <div className="relative h-44 w-full bg-[#050810] flex items-center justify-center overflow-hidden">
+                <div className="relative h-44 w-full bg-gray-900 flex items-center justify-center overflow-hidden">
                   {priceTarget && (
                     <div className="absolute top-3 left-3 z-30 bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md flex items-center gap-1 shadow-xl">
                       <Target size={10} /> {priceTarget} TARGET

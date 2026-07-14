@@ -18,7 +18,7 @@ export default function NewsFeed({ articles = [] }: NewsFeedProps) {
   // Graceful empty state
   if (!articles || articles.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-500 border-2 border-dashed border-white/5 rounded-2xl bg-[#0F1420]/50">
+      <div className="flex flex-col items-center justify-center py-12 text-gray-500 border-2 border-dashed border-white/5 rounded-2xl bg-gray-800/50">
         <Newspaper className="w-8 h-8 mb-2 opacity-20" />
         <p className="text-sm italic">
           No recent headlines found for this asset.
@@ -35,7 +35,7 @@ export default function NewsFeed({ articles = [] }: NewsFeedProps) {
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex flex-col gap-3 p-4 rounded-xl bg-[#0F1420] border border-white/5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.02] transition-all duration-200"
+          className="group flex flex-col gap-3 p-4 rounded-xl bg-gray-800 border border-white/5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.02] transition-all duration-200"
         >
           {/* Header: Source & Time */}
           <div className="flex justify-between items-start">

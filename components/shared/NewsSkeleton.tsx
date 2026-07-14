@@ -4,7 +4,7 @@ export default function NewsSkeleton() {
       {[...Array(8)].map((_, i) => (
         <div
           key={i}
-          className="flex flex-col bg-[#0F1420] border border-white/5 rounded-2xl overflow-hidden h-[400px]"
+          className="flex flex-col bg-gray-800 border border-white/5 rounded-2xl overflow-hidden h-[400px]"
         >
           {/* Image Placeholder */}
           <div className="h-44 w-full bg-gray-800/50" />

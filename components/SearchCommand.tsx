@@ -159,7 +159,7 @@ export function SearchCommandDialog({
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <div className="flex items-center border-b border-white/5 px-3 bg-[#0F1420]">
+      <div className="flex items-center border-b border-white/5 px-3 bg-gray-800">
         <CommandInput
           value={searchTerm}
           onValueChange={setSearchTerm}
@@ -171,7 +171,7 @@ export function SearchCommandDialog({
         )}
       </div>
 
-      <CommandList className="bg-[#0F1420] overflow-y-auto max-h-[400px]">
+      <CommandList className="bg-gray-800 overflow-y-auto max-h-[400px]">
         <div className="py-2">
           {stocks.map((stock, index) => (
             <Link

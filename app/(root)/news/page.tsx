@@ -302,7 +302,7 @@ export default async function NewsPage({
   );
 
   return (
-    <div className="min-h-screen bg-[#050810] text-white p-4 md:p-8 pb-24 relative">
+    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 pb-24 relative">
       {/* SEO: Inject JSON-LD */}
       <script
         type="application/ld+json"
@@ -312,7 +312,7 @@ export default async function NewsPage({
       <div className="max-w-[1600px] mx-auto">
         {!isSavedFilter && sentimentHubData && (
           <Link href="/sentiment" className="group block mb-10">
-            <div className="bg-[#0F1420] border border-white/5 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-indigo-500/30 transition-all">
+            <div className="bg-gray-800 border border-white/5 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-indigo-500/30 transition-all">
               <div className="flex items-center gap-6">
                 <div className="p-4 bg-indigo-600/10 rounded-2xl text-indigo-500 group-hover:scale-110 transition-transform">
                   <Zap size={24} fill="currentColor" />
@@ -336,7 +336,7 @@ export default async function NewsPage({
                 {sentimentHubData.leaderboard.slice(0, 3).map((item: any) => (
                   <div
                     key={item.symbol}
-                    className="bg-[#050810] px-4 py-2 rounded-xl border border-white/5 flex items-center gap-3"
+                    className="bg-gray-900 px-4 py-2 rounded-xl border border-white/5 flex items-center gap-3"
                   >
                     <span className="text-[10px] font-black text-indigo-400">
                       ${item.symbol}
@@ -367,7 +367,7 @@ export default async function NewsPage({
                 {isGeneral ? "Global Market Pulse" : "Watchlist Intelligence"}
               </h1>
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-1 bg-[#0F1420] p-1 rounded-xl border border-white/5">
+                <div className="flex items-center gap-1 bg-gray-800 p-1 rounded-xl border border-white/5">
                   <Link
                     href="/news"
                     className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isSavedFilter ? "bg-indigo-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"}`}
@@ -426,7 +426,7 @@ export default async function NewsPage({
           </div>
 
           <aside className="lg:col-span-3">
-            <div className="hidden lg:block bg-[#0F1420] border border-white/5 rounded-2xl p-6 sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto custom-sidebar-scrollbar">
+            <div className="hidden lg:block bg-gray-800 border border-white/5 rounded-2xl p-6 sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto custom-sidebar-scrollbar">
               <SidebarContent />
             </div>
 
@@ -440,7 +440,7 @@ export default async function NewsPage({
                 </SheetTrigger>
                 <SheetContent
                   side="right"
-                  className="bg-[#0F1420] border-l-white/5 text-white w-[300px] p-6 overflow-y-auto custom-sidebar-scrollbar"
+                  className="bg-gray-800 border-l-white/5 text-white w-[300px] p-6 overflow-y-auto custom-sidebar-scrollbar"
                 >
                   <VisuallyHidden>
                     <SheetTitle>Market Intelligence</SheetTitle>

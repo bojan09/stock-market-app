@@ -8,7 +8,7 @@ export default function InsiderTransactions({
 }) {
   if (!transactions || transactions.length === 0) {
     return (
-      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 text-center">
+      <div className="bg-gray-800 rounded-2xl border border-white/5 p-6 text-center">
         <p className="text-xs text-gray-500 italic">
           No recent insider activity reported.
         </p>
@@ -17,7 +17,7 @@ export default function InsiderTransactions({
   }
 
   return (
-    <div className="bg-[#0F1420] rounded-2xl border border-white/5 overflow-hidden">
+    <div className="bg-gray-800 rounded-2xl border border-white/5 overflow-hidden">
       <div className="p-4 border-b border-white/5 flex justify-between items-center">
         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
           <User className="w-4 h-4 text-indigo-500" />

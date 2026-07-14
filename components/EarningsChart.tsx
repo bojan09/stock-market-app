@@ -38,7 +38,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[200px] text-gray-500">
+      <div className="bg-gray-800 rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[200px] text-gray-500">
         <AlertCircle className="w-8 h-8 mb-2 opacity-20" />
         <p className="text-xs font-bold uppercase tracking-widest">
           Earnings data unavailable
@@ -48,7 +48,7 @@ export default function EarningsChart({ data }: { data: EarningsData[] }) {
   }
 
   return (
-    <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 shadow-xl w-full">
+    <div className="bg-gray-800 rounded-2xl border border-white/5 p-6 shadow-xl w-full">
       <div className="flex justify-between items-center mb-6">
         <div className="space-y-1">
           <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">

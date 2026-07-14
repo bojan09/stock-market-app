@@ -75,7 +75,7 @@ export default function AlertModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="bg-[#0F1420] border-white/10 text-gray-200">
+      <DialogContent className="bg-gray-800 border-white/10 text-gray-200">
         <DialogHeader>
           <DialogTitle className="text-white">
             Set price alert for {symbol}
@@ -91,10 +91,10 @@ export default function AlertModal({
               value={alertType}
               onValueChange={(v) => setAlertType(v as "upper" | "lower")}
             >
-              <SelectTrigger className="w-full bg-[#0F1420] border-white/10">
+              <SelectTrigger className="w-full bg-gray-800 border-white/10">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#0F1420] border-white/10 text-gray-200">
+              <SelectContent className="bg-gray-800 border-white/10 text-gray-200">
                 {ALERT_TYPE_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     Price goes {opt.label.toLowerCase()}
@@ -115,7 +115,7 @@ export default function AlertModal({
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-md bg-[#0F1420] border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md bg-gray-800 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 

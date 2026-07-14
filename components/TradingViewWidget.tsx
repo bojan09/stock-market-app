@@ -142,7 +142,7 @@ const TradingViewWidget = ({
         id={`tv-widget-${widgetId}`}
         ref={containerRef}
         className={cn(
-          "tradingview-widget-container rounded-2xl overflow-hidden border border-white/5 bg-[#0F1420] shadow-2xl",
+          "tradingview-widget-container rounded-2xl overflow-hidden border border-white/5 bg-gray-800 shadow-2xl",
           className,
         )}
         style={{ height }}

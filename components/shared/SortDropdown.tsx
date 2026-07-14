@@ -34,7 +34,7 @@ export default function SortDropdown({
   };
 
   return (
-    <div className="relative flex items-center bg-[#0F1420] border border-white/5 rounded-xl px-3 py-2 hover:border-white/10 transition-all group">
+    <div className="relative flex items-center bg-gray-800 border border-white/5 rounded-xl px-3 py-2 hover:border-white/10 transition-all group">
       <ArrowUpDown
         size={14}
         className="text-gray-500 mr-2 group-hover:text-indigo-400 transition-colors"
@@ -46,7 +46,7 @@ export default function SortDropdown({
         className="bg-transparent text-xs font-bold text-gray-300 focus:outline-none appearance-none cursor-pointer pr-6 z-10"
       >
         {sortOptions.map((opt) => (
-          <option key={opt.value} value={opt.value} className="bg-[#0F1420] text-white">
+          <option key={opt.value} value={opt.value} className="bg-gray-800 text-white">
             {opt.label}
           </option>
         ))}

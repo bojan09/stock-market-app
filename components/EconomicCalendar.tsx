@@ -34,13 +34,13 @@ export default function EconomicCalendar() {
 
   if (loading)
     return (
-      <div className="w-full h-64 bg-[#0F1420] border border-white/5 rounded-2xl flex items-center justify-center">
+      <div className="w-full h-64 bg-gray-800 border border-white/5 rounded-2xl flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
 
   return (
-    <div className="bg-[#0F1420] border border-white/5 rounded-2xl overflow-hidden">
+    <div className="bg-gray-800 border border-white/5 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-3">

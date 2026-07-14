@@ -34,7 +34,7 @@ export default function AnalystConsensus({
         : "text-yellow-400";
 
   return (
-    <div className="relative group bg-[#0F1420] rounded-2xl border border-white/5 p-6 space-y-6 shadow-2xl transition-all hover:border-white/10">
+    <div className="relative group bg-gray-800 rounded-2xl border border-white/5 p-6 space-y-6 shadow-2xl transition-all hover:border-white/10">
       {/* Decorative Background Glow */}
       <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none" />
 

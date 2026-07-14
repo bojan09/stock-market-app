@@ -22,7 +22,7 @@ export default function PriceTargets({ data }: PriceTargetProps) {
     data.current === undefined
   ) {
     return (
-      <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[160px] text-center space-y-3">
+      <div className="bg-gray-800 rounded-2xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[160px] text-center space-y-3">
         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
           <Info className="w-5 h-5 text-gray-500" />
         </div>
@@ -49,7 +49,7 @@ export default function PriceTargets({ data }: PriceTargetProps) {
   const markerPos = Math.min(Math.max(currentPos, 0), 100);
 
   return (
-    <div className="bg-[#0F1420] rounded-2xl border border-white/5 p-6 space-y-6 shadow-xl">
+    <div className="bg-gray-800 rounded-2xl border border-white/5 p-6 space-y-6 shadow-xl">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
           <Target className="w-4 h-4 text-indigo-500" />
@@ -101,7 +101,7 @@ export default function PriceTargets({ data }: PriceTargetProps) {
               className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center group z-20"
               style={{ left: `${markerPos}%` }}
             >
-              <div className="w-3.5 h-3.5 bg-indigo-500 rounded-full border-2 border-[#0F1420] shadow-[0_0_12px_rgba(99, 102, 241,0.6)]" />
+              <div className="w-3.5 h-3.5 bg-indigo-500 rounded-full border-2 border-gray-800 shadow-[0_0_12px_rgba(99, 102, 241,0.6)]" />
               <span className="absolute -top-6 text-[9px] font-black text-white bg-indigo-600 px-1.5 py-0.5 rounded shadow-lg">
                 NOW
               </span>
