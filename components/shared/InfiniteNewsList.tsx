@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, ExternalLink, Newspaper, Target, ArrowUp } from "lucide-react";
+import { Clock, ExternalLink, Newspaper, Target, ArrowUp, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import BookmarkButton from "@/components/shared/BookmarkButton";
 import ShareButton from "@/components/shared/ShareButton";
 import { useSearchParams } from "next/navigation";
+import { getRelatedTickers } from "@/lib/news-helpers";
 
 const getSentiment = (headline: string) => {
   const h = headline.toLowerCase();
@@ -40,41 +41,18 @@ const findPriceTarget = (text: string) => {
   return match ? match[0] : null;
 };
 
-const findTickers = (text: string) => {
-  const matches = text.match(/\b[A-Z]{2,5}\b/g);
-  return matches
-    ? Array.from(new Set(matches)).filter(
-        (t) =>
-          !["NEWS", "USA", "FED", "CEO", "AI", "USD", "ETF", "SEC"].includes(t),
-      )
-    : [];
-};
-
-const getRelatedTickers = (article: any, watchedSymbols: string[]) => {
-  const fromField = String(article.related || "")
-    .split(",")
-    .map((s) => s.trim().toUpperCase())
-    .filter(Boolean);
-  const fromText = findTickers(`${article.headline} ${article.summary || ""}`);
-
-  const combined = Array.from(new Set([...fromField, ...fromText]));
-
-  return combined
-    .map((symbol) => ({ symbol, isWatched: watchedSymbols.includes(symbol) }))
-    .sort((a, b) => Number(b.isWatched) - Number(a.isWatched))
-    .slice(0, 4);
-};
-
 export default function InfiniteNewsList({
   initialArticles,
   userId,
   savedIds,
   watchedSymbols = [],
+  aiTakeaways = {},
 }: {
   initialArticles: any[];
   userId: string;
   savedIds: string[];
   watchedSymbols?: string[];
+  aiTakeaways?: Record<string, string>;
 }) {
   const searchParams = useSearchParams();
   const isSavedView = searchParams.get("filter") === "saved";
@@ -234,9 +212,18 @@ export default function InfiniteNewsList({
                   <h2 className="text-base font-bold line-clamp-2 group-hover:text-indigo-400 transition-colors">
                     {article.headline}
                   </h2>
-                  <p className="text-xs text-gray-500 mt-3 line-clamp-2 flex-1 leading-relaxed">
+                  <p className="text-xs text-gray-500 mt-3 line-clamp-2 leading-relaxed">
                     {article.summary}
                   </p>
+                  {aiTakeaways[articleId] && (
+                    <div className="mt-3 flex items-start gap-2 rounded-lg bg-indigo-500/5 border border-indigo-500/20 px-3 py-2">
+                      <Sparkles size={12} className="text-indigo-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-indigo-200 leading-relaxed">
+                        {aiTakeaways[articleId]}
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex-1" />
                   <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-gray-400 group-hover:text-white transition-colors">
                     <span className="flex items-center gap-1">
                       <Clock size={10} />{" "}

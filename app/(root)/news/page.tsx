@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWatchlistNews } from "@/lib/actions/news.actions";
 import { getWatchlistSymbolsById } from "@/lib/actions/watchlist.actions";
+import { getNewsTakeaway } from "@/lib/actions/ai.actions";
+import { getRelatedTickers } from "@/lib/news-helpers";
 import { getSentimentDashboardData } from "@/lib/actions/sentiment.actions";
 import { getEconomicCalendar } from "@/lib/actions/market.actions";
 import {
@@ -146,6 +148,35 @@ export default async function NewsPage({
   articles = [...articles].sort((a: any, b: any) =>
     sortBy === "oldest" ? a.datetime - b.datetime : b.datetime - a.datetime,
   );
+
+  // AI takeaways: only for articles that actually mention a watchlist
+  // symbol, capped at 6 to keep latency/cost bounded.
+  const aiTakeaways: Record<string, string> = {};
+  if (watchedSymbols.length > 0) {
+    const candidates = articles
+      .map((a: any) => ({
+        article: a,
+        watched: getRelatedTickers(a, watchedSymbols).find((t) => t.isWatched),
+      }))
+      .filter((c) => c.watched)
+      .slice(0, 6);
+
+    const results = await Promise.all(
+      candidates.map(({ article, watched }) =>
+        getNewsTakeaway(
+          String(article.id || article.articleId),
+          article.headline,
+          article.summary || "",
+          watched!.symbol,
+        ),
+      ),
+    );
+
+    candidates.forEach(({ article }, i) => {
+      const articleId = String(article.id || article.articleId);
+      if (results[i]) aiTakeaways[articleId] = results[i]!;
+    });
+  }
 
   // SEO: JSON-LD Schema for News List
   const jsonLd = {
@@ -423,6 +454,7 @@ export default async function NewsPage({
                 userId={userId}
                 savedIds={savedIds}
                 watchedSymbols={watchedSymbols}
+                aiTakeaways={aiTakeaways}
               />
             )}
           </div>

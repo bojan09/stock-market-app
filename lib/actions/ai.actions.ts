@@ -46,3 +46,44 @@ export async function getAiMarketSummary(articles: any[]) {
     return null; // Ensure we never crash the page
   }
 }
+
+async function fetchNewsTakeaway(
+  headline: string,
+  summary: string,
+  symbol: string,
+): Promise<string | null> {
+  const prompt = `
+    Headline: ${headline}
+    Summary: ${summary || "(no summary)"}
+
+    In one short plain-English sentence (under 20 words), explain why this
+    news matters specifically for an investor tracking ${symbol}. Do not
+    give financial advice or predictions -- just explain the relevance.
+    Return ONLY the sentence, no quotes, no markdown.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (error) {
+    console.warn("News takeaway generation failed:", error);
+    return null;
+  }
+}
+
+export async function getNewsTakeaway(
+  articleId: string,
+  headline: string,
+  summary: string,
+  symbol: string,
+): Promise<string | null> {
+  try {
+    return await unstable_cache(
+      async () => fetchNewsTakeaway(headline, summary, symbol),
+      [`news-takeaway-${articleId}-${symbol}`],
+      { revalidate: 86400 },
+    )();
+  } catch (e) {
+    return null;
+  }
+}
