@@ -11,7 +11,7 @@ const Layout = async ({ children }: { children : React.ReactNode }) => {
     if(session?.user) redirect('/')
 
     return (
-        <main className="auth-layout">
+        <main id="main-content" className="auth-layout">
             <section className="auth-left-section scrollbar-hide-default">
                 <Link href="/" className="auth-logo">
                     <Image src="/assets/icons/logo.svg" alt="Signalist logo" width={140} height={32} className='h-8 w-auto' />
