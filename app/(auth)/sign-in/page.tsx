@@ -7,6 +7,7 @@ import FooterLink from "@/components/forms/FooterLink";
 import { signInWithEmail } from "@/lib/actions/auth.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 const SignIn = () => {
   const router = useRouter();
@@ -68,6 +69,14 @@ const SignIn = () => {
         >
           {isSubmitting ? "Signing In" : "Sign In"}
         </Button>
+
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-gray-600" />
+          <span className="text-xs text-gray-500 uppercase tracking-wide">or</span>
+          <div className="h-px flex-1 bg-gray-600" />
+        </div>
+
+        <GoogleSignInButton />
 
         <FooterLink
           text="Don't have an account?"
