@@ -15,7 +15,7 @@ import {
 } from "@/lib/actions/finnhub.actions";
 import {
   toggleWatchlist,
-  getWatchlistSymbolsById,
+  getWatchlistSymbolsForClient,
 } from "@/lib/actions/watchlist.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,7 @@ export function SearchCommandDialog({
     if (!userId) return;
     setLoading(true);
     try {
-      const watchedSymbols = await getWatchlistSymbolsById(userId);
+      const watchedSymbols = await getWatchlistSymbolsForClient(userId);
       const randomTen = await getRandomMarketSuggestions(watchedSymbols);
       setStocks(randomTen as StockWithWatchlistStatus[]);
     } catch (error) {
@@ -98,7 +98,7 @@ export function SearchCommandDialog({
     try {
       const [results, watchedSymbols] = await Promise.all([
         searchStocks(searchTerm.trim()),
-        getWatchlistSymbolsById(userId),
+        getWatchlistSymbolsForClient(userId),
       ]);
 
       const uppercaseWatched = watchedSymbols.map((s: string) =>

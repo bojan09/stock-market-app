@@ -3,8 +3,12 @@
 import { connectToDatabase } from "@/database/mongoose";
 import { SavedNews } from "@/database/models/savedNews.model";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/actions/session-guard";
 
 export async function toggleSaveNews(userId: string, article: any) {
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return { error: "Unauthorized" };
+
   try {
     await connectToDatabase();
 
@@ -39,6 +43,9 @@ export async function toggleSaveNews(userId: string, article: any) {
 }
 
 export async function getSavedNewsIds(userId: string) {
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return [];
+
   try {
     await connectToDatabase();
     const saved = await SavedNews.find({ userId }).select("articleId").lean();
@@ -49,6 +56,9 @@ export async function getSavedNewsIds(userId: string) {
 }
 
 export async function getSavedArticles(userId: string) {
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return [];
+
   try {
     await connectToDatabase();
     const saved = await SavedNews.find({ userId }).sort({ savedAt: -1 }).lean();

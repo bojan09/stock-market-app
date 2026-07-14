@@ -3,6 +3,7 @@
 import { connectToDatabase } from "@/database/mongoose";
 import { AlertModel } from "@/database/models/alert.model";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/actions/session-guard";
 
 export async function createAlert(
   userId: string,
@@ -14,7 +15,8 @@ export async function createAlert(
     threshold: number;
   },
 ) {
-  if (!userId) return { success: false, error: "Unauthorized" };
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     await connectToDatabase();
@@ -37,7 +39,8 @@ export async function createAlert(
 }
 
 export async function deleteAlert(userId: string, alertId: string) {
-  if (!userId) return { success: false, error: "Unauthorized" };
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     await connectToDatabase();
@@ -52,7 +55,8 @@ export async function deleteAlert(userId: string, alertId: string) {
 }
 
 export async function getAlertsByUserId(userId: string): Promise<Alert[]> {
-  if (!userId) return [];
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return [];
 
   try {
     await connectToDatabase();
@@ -77,7 +81,8 @@ export async function getAlertsBySymbol(
   userId: string,
   symbol: string,
 ): Promise<Alert[]> {
-  if (!userId) return [];
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return [];
 
   try {
     await connectToDatabase();

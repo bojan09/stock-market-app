@@ -3,6 +3,7 @@
 import { connectToDatabase } from "@/database/mongoose";
 import { Watchlist } from "@/database/models/watchlist.model";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/actions/session-guard";
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 
@@ -60,7 +61,8 @@ export async function toggleWatchlist(
   symbol: string,
   company: string,
 ) {
-  if (!userId) return { success: false, error: "Unauthorized" };
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return { success: false, error: "Unauthorized" };
   try {
     await connectToDatabase();
     const targetSymbol = symbol.toUpperCase().trim();
@@ -111,6 +113,20 @@ export async function getWatchlistSymbolsById(
 }
 
 /**
+ * Client-safe wrapper for getWatchlistSymbolsById: verifies the caller's
+ * actual session before returning data. getWatchlistSymbolsById itself
+ * stays unguarded because trusted server-only code (the daily-news cron)
+ * calls it for arbitrary users outside any request session.
+ */
+export async function getWatchlistSymbolsForClient(
+  userId: string,
+): Promise<string[]> {
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return [];
+  return getWatchlistSymbolsById(verifiedUserId);
+}
+
+/**
  * Paginated fetch for the main Watchlist page.
  */
 export async function getPaginatedWatchlist(
@@ -119,7 +135,8 @@ export async function getPaginatedWatchlist(
   limit: number = 5,
   options?: { sortBy?: "recent" | "oldest" | "symbol"; search?: string },
 ) {
-  if (!userId) return { symbols: [], total: 0 };
+  const verifiedUserId = await requireUser(userId);
+  if (!verifiedUserId) return { symbols: [], total: 0 };
   try {
     await connectToDatabase();
     const skip = (page - 1) * limit;
