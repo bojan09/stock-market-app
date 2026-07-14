@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   ListOrdered,
   Newspaper,
+  Briefcase,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth.actions";
 
@@ -90,6 +91,14 @@ const UserDropdown = ({ user, userId, onOpenSearch }: UserDropdownProps) => {
           >
             <ListOrdered className="h-4 w-4 mr-3 text-gray-500" />
             Watchlist
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className="focus:bg-white/5 focus:text-white cursor-pointer py-2.5"
+            onClick={() => router.push("/portfolio")}
+          >
+            <Briefcase className="h-4 w-4 mr-3 text-gray-500" />
+            Portfolio
           </DropdownMenuItem>
 
           {/* NEW: News Item for Mobile */}
